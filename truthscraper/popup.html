@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>TruthScraper</title>
+        <link rel="stylesheet" type="text/css" href="popup.css" />
+        <script src="popup.js"></script>
+    </head>
+
+    <body>
+        <div class="ts-logo">
+            <img src="icons/truth-logo.svg" style="width: 80%" fill="currentColor">
+        </div>
+        <div id="version-div">version</div>
+        <br />
+        <div id="grant-permissions" style="display: none">
+            <div>Grant access to truthsocial.com?</div>
+            <button id="grant-permissions">OK</button>
+        </div>
+        <div id="content-container">
+            <div id="error-msg" style="display: none">
+                Unsupported page:<br />go to
+                <a href="https://truthsocial.com/" target="_blank"
+                    >TruthSocial</a
+                >
+                to fetch content
+            </div>
+            <div id="start-container" style="display: none">
+                <button id="start-btn">
+                    Start
+                </button>
+            </div>
+        </div>
+    </body>
+</html>

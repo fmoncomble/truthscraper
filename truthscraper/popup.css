@@ -1,0 +1,33 @@
+html {
+    border: none;
+    border-radius: 10px;
+    width: 272px;
+}
+
+body {
+    background-color: white;
+    text-align: center;
+    font-family: 'Roboto', system-ui, sans-serif;
+    font-size: small;
+    width: 236px;
+    height: 150px;
+    padding: 10px;
+}
+
+button {
+    color: #563accff;
+    border: solid 1px #563accff;
+    background-color: white;
+    height: 32px;
+    width: 50px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #eeebfa;
+}
+
+.ts-logo {
+    margin-top: 10%;
+}
