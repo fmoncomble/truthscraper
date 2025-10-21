@@ -1,5 +1,5 @@
-![mastologo](https://github.com/fmoncomble/mastoscraper/assets/59739627/15c77ec3-9dba-4e97-868f-984dddd87816)
-
+<img width="722" height="58" alt="truth-logo" src="https://github.com/user-attachments/assets/c69b7c90-0411-418e-9656-a65796aa7660" />  
+  
 An extension for extracting and downloading Truth Social posts for text mining and analysis.
 
 ### Cite this program
@@ -20,7 +20,7 @@ For research purposes only, in compliance with relevant copyright and privacy le
 
 ### Chrome/Edge
 
-[![available-chrome-web-store4321](https://github.com/fmoncomble/mastoscraper/assets/59739627/83a7e643-4784-4095-92b6-30e908dc0200)](https://chromewebstore.google.com/detail/mastoscraper/ilgebclibaabhdhpgkfkkknpmblfnblg?hl=en-GB&authuser=0)
+Soon available.
 
 Remember to pin the add-on to the toolbar.
 
