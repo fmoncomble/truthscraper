@@ -6,7 +6,7 @@ An extension for extracting and downloading Truth Social posts for text mining a
 
 If you use this extension for your research, please reference it as follows:
 
-Moncomble, F. (2025). _TruthScraper_ (Version 0.1) [JavaScript]. Arras, France: Université d'Artois. Available at: https://fmoncomble.github.io/truthscraper/
+Moncomble, F. (2025). _TruthScraper_ (Version 0.2) [JavaScript]. Arras, France: Université d'Artois. Available at: https://fmoncomble.github.io/truthscraper/
 
 ## Important notice
 
@@ -47,4 +47,4 @@ Remember to pin the add-on to the toolbar.
 ## Known limitations
 
 -   Searching by language is not built into the Truth Social API, meaning that results are filtered from the whole query response, which may take some time depending on the chosen criteria.
--   Truth Social's server is sensitive to automatic activity. As a result, the user may be temporarily blocked and need to wait or use a VPN.
+-   Truth Social's server is sensitive to automatic activity. As a result, the user may be temporarily blocked. There is mechanism around that but if it fails you may need to wait or use a VPN.
