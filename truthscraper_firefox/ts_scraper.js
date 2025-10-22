@@ -1,4 +1,4 @@
-window.onload = async function () {
+document.addEventListener("DOMContentLoaded", async function () {
 	console.log("TS Scraper loaded");
 	chrome.runtime.onMessage.addListener(
 		async (message, sender, sendResponse) => {
@@ -1450,4 +1450,4 @@ window.onload = async function () {
 			}
 		}
 	);
-};
+});

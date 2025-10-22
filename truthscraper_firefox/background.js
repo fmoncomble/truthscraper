@@ -1,6 +1,3 @@
-importScripts("polyfill.js");
-importScripts("exceljs.min.js");
-
 // Handle Oauth
 chrome.webNavigation.onCommitted.addListener(
 	(evt) => {
