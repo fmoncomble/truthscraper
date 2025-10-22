@@ -20,7 +20,7 @@ For research purposes only, in compliance with relevant copyright and privacy le
 
 ### Chrome/Edge
 
-Soon available.
+[![available-chrome-web-store4321](https://github.com/fmoncomble/SocialCorpusScraper/assets/59739627/e497b504-5836-4acd-a283-96f53366d290)](https://chrome.google.com/webstore/detail/mnholfdnbpigchhdjblfgjmfplpeecep)
 
 Remember to pin the add-on to the toolbar.
 
