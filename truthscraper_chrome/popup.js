@@ -15,8 +15,22 @@ document.addEventListener("DOMContentLoaded", function () {
 			const permissions = await checkPermissions();
             if (permissions) {
                 chrome.tabs.sendMessage(tab.id, { action: "checkScraperStatus" }, (response) => {
+					console.log("Scraper status response:", response);
                     if (response) {
-                        document.getElementById("start-container").style.display = "block";
+						chrome.tabs.sendMessage(tab.id, { action: "checkOpenDialog" }, (dialogResponse) => {
+							console.log("Dialog status response:", dialogResponse);
+							if (dialogResponse && dialogResponse.open) {
+								const dialogOpenContainer = document.getElementById("dialogopen-container");
+								dialogOpenContainer.style.display = "block";
+								document.getElementById("start-container").style.display = "none";
+								document.getElementById("reload-container").style.display = "none";
+								setTimeout(() => {
+									window.close();
+								}, 2000);
+							} else {
+								document.getElementById("start-container").style.display = "block";
+							}
+						});
                     } else if (!response) {
                         document.getElementById("reload-container").style.display = "block";
                     }

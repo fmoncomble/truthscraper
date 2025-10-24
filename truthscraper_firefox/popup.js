@@ -16,7 +16,19 @@ document.addEventListener("DOMContentLoaded", function () {
             if (permissions) {
                 chrome.tabs.sendMessage(tab.id, { action: "checkScraperStatus" }, (response) => {
                     if (response) {
-                        document.getElementById("start-container").style.display = "block";
+						chrome.tabs.sendMessage(tab.id, { action: "checkOpenDialog" }, (dialogResponse) => {
+							if (dialogResponse && dialogResponse.open) {
+								const dialogOpenContainer = document.getElementById("dialogopen-container");
+								dialogOpenContainer.style.display = "block";
+								document.getElementById("start-container").style.display = "none";
+								document.getElementById("reload-container").style.display = "none";
+								setTimeout(() => {
+									window.close();
+								}, 2000);
+							} else {
+								document.getElementById("start-container").style.display = "block";
+							}
+						});
                     } else if (!response) {
                         document.getElementById("reload-container").style.display = "block";
                     }
@@ -90,18 +102,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		function onResponse(response) {
 			if (response) {
-				console.log("Permission was granted");
                 window.location.reload();
 			} else {
-				console.log("Permission was refused");
-                window.close();
+				window.close();
 			}
 			return chrome.permissions.getAll();
 		}
 
 		const response = await chrome.permissions.request(permissionsToRequest);
 		const currentPermissions = await onResponse(response);
-		console.log(`Current permissions:`, currentPermissions);
 	}
 
 	document

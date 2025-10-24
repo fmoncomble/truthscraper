@@ -1,3 +1,8 @@
+if (navigator.userAgent.indexOf("Chrome") > -1) {
+	importScripts("polyfill.js");
+	importScripts("exceljs.min.js");
+}
+
 let tabId;
 
 // Handle Oauth
@@ -109,7 +114,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 								new URL(redirectUrl).search
 							);
 							const code = urlParams.get("code");
-							sendResponse({ success: true, code: code });
+							if (code) {
+								sendResponse({ success: true, code: code });
+							} else {
+								sendResponse({
+									success: false,
+									error: "no_code",
+								});
+							}
 						} catch (e) {
 							sendResponse({
 								success: false,

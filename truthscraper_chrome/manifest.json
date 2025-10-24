@@ -1,10 +1,10 @@
 {
 	"manifest_version": 3,
 	"name": "TruthScraper",
-	"version": "0.3",
+	"version": "0.5",
 	"description": "A browser extension to scrape Truth Social search results",
 	"homepage_url": "https://fmoncomble.github.io/truthscraper/",
-	"permissions": ["storage", "identity", "tabs", "webNavigation"],
+	"permissions": ["storage", "identity", "tabs", "webNavigation", "webRequest"],
 	"host_permissions": ["*://*.truthsocial.com/*"],
 	"web_accessible_resources": [
 		{
@@ -20,6 +20,7 @@
 		}
 	],
 	"background": {
+        "scripts": ["background.js", "polyfill.js", "exceljs.min.js"],
 		"service_worker": "background.js"
 	},
 	"icons": {
@@ -29,5 +30,14 @@
 	"action": {
 		"default_popup": "popup.html",
 		"default_icon": "icons/icon-32.png"
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "truthscraper@fmoncomble.github.io",
+			"update_url": "https://github.com/fmoncomble/truthscraper/releases/latest/download/update_manifest.json",
+			"data_collection_permissions": {
+				"required": ["none"]
+			}
+		}
 	}
 }

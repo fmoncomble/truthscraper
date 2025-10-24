@@ -1,5 +1,12 @@
-importScripts("polyfill.js");
-importScripts("exceljs.min.js");
+if (navigator.userAgent.indexOf("Chrome") > -1) {
+	console.log("Loading Excel support scripts for Chrome");
+	importScripts("polyfill.js");
+	importScripts("exceljs.min.js");
+} else if (navigator.userAgent.indexOf("Firefox") > -1) {
+	console.log("Excel support scripts loaded from manifest");
+}
+
+let tabId;
 
 // Handle Oauth
 chrome.webNavigation.onCommitted.addListener(
@@ -14,13 +21,54 @@ chrome.webNavigation.onCommitted.addListener(
 			chrome.tabs.update(evt.tabId, {
 				url: "https://truthsocial.com/",
 			});
+			chrome.tabs.remove(evt.tabId);
+			if (tabId) {
+				chrome.tabs.sendMessage(tabId, {
+					action: "accessResetDone",
+				});
+				chrome.tabs.update(tabId, { active: true });
+			} else {
+				chrome.tabs.query(
+					{ active: true, currentWindow: true },
+					(tabs) => {
+						if (tabs && tabs.length > 0) {
+							chrome.tabs.sendMessage(tabs[0].id, {
+								action: "accessResetDone",
+							});
+							chrome.tabs.update(tabs[0].id, { active: true });
+						}
+					}
+				);
+			}
 		}
 	},
-	{ url: [{ urlEquals: "https://truthsocial.com/api/v1/trends" }] }
+	{ url: [{ urlContains: "https://truthsocial.com/api/" }] }
+);
+
+chrome.webRequest.onResponseStarted.addListener(
+	(details) => {
+		if (details.statusCode === 429) {
+			const retryAfter = details.responseHeaders.find(
+				(header) => header.name.toLowerCase() === "retry-after"
+			);
+			if (retryAfter) {
+				chrome.tabs.sendMessage(details.tabId, {
+					action: "rateLimitHit",
+					origin: "truthscraper background",
+					retryAfter: retryAfter.value,
+				});
+			}
+		}
+	},
+	{
+		urls: ["https://truthsocial.com/api/*"],
+	},
+	["responseHeaders"]
 );
 
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+	tabId = sender.tab ? sender.tab.id : null;
 	if (message && message.action === "getRedirectUri") {
 		let redirectUri;
 		const userAgent = navigator.userAgent;
@@ -69,7 +117,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 								new URL(redirectUrl).search
 							);
 							const code = urlParams.get("code");
-							sendResponse({ success: true, code: code });
+							if (code) {
+								sendResponse({ success: true, code: code });
+							} else {
+								sendResponse({
+									success: false,
+									error: "no_code",
+								});
+							}
 						} catch (e) {
 							sendResponse({
 								success: false,
@@ -97,6 +152,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 			generateXlsx(posts, formatTable, sendResponse);
 			return true;
 		}
+	}
+	if (message && message.action === "resetAccess") {
+		chrome.tabs.create({ url: message.url }, (tab) => {
+			sendResponse({ success: true });
+		});
+		return true;
 	}
 });
 
@@ -170,18 +231,20 @@ async function generateXlsx(posts, formatTable, sendResponse) {
 	} else {
 		worksheet.addRows(rows);
 	}
-	const urlCol = worksheet.getColumn("url");
-	if (urlCol) {
-		urlCol.eachCell(function (cell) {
-			if (cell.value && cell.value.hyperlink) {
-				cell.style = {
-					font: {
-						color: { argb: "ff0000ff" },
-						underline: true,
-					},
-				};
-			}
-		});
+	if (posts[0].hasOwnProperty("url")) {
+		const urlCol = worksheet.getColumn("url");
+		if (urlCol) {
+			urlCol.eachCell(function (cell) {
+				if (cell.value && cell.value.hyperlink) {
+					cell.style = {
+						font: {
+							color: { argb: "ff0000ff" },
+							underline: true,
+						},
+					};
+				}
+			});
+		}
 	}
 	const buffer = await workbook.xlsx.writeBuffer();
 	const binaryBlob = btoa(String.fromCharCode(...new Uint8Array(buffer)));

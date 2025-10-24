@@ -18,8 +18,7 @@ button {
     color: #563accff;
     border: solid 1px #563accff;
     background-color: white;
-    height: 32px;
-    width: 50px;
+    padding: 6px 12px;
     border-radius: 4px;
     cursor: pointer;
 }
