@@ -6,7 +6,7 @@ An extension for extracting and downloading Truth Social posts for text mining a
 
 If you use this extension for your research, please reference it as follows:
 
-Moncomble, F. (2025). _TruthScraper_ (Version 0.2) [JavaScript]. Arras, France: Université d'Artois. Available at: https://fmoncomble.github.io/truthscraper/
+Moncomble, F. (2025). _TruthScraper_ (Version 0.3) [JavaScript]. Arras, France: Université d'Artois. Available at: https://fmoncomble.github.io/truthscraper/
 
 ## Important notice
 
