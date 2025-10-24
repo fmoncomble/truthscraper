@@ -1,8 +1,15 @@
 window.onload = async function () {
-	console.log("TS Scraper loaded");
+	console.log("TruthScraper loaded");
 	chrome.runtime.onMessage.addListener(
 		async (message, sender, sendResponse) => {
-			if (message.action === "scrape") {
+			if (message.action === "checkScraperStatus") {
+				return true;
+			}
+			if (message.action === "start_truthscraper") {
+				chrome.runtime.sendMessage({
+					action: "log",
+					info: "Starting TruthScraper dialog",
+				});
 				const dialog = document.createElement("dialog");
 				dialog.classList.add("ts-scraper-dialog");
 				const dialogHtmlUrl = chrome.runtime.getURL("ts_scraper.html");
@@ -15,7 +22,6 @@ window.onload = async function () {
 				dialog.innerHTML = dialogHtml;
 				document.body.appendChild(dialog);
 				dialog.showModal();
-				sendResponse({ success: true });
 				const authContainer = dialog.querySelector("#auth-container");
 				const authFold = dialog.querySelector("#auth-fold");
 				const authUnfold = dialog.querySelector("#auth-unfold");
@@ -31,6 +37,8 @@ window.onload = async function () {
 				const searchUnfold = dialog.querySelector("#search-unfold");
 				const searchContainer =
 					dialog.querySelector("#search-container");
+				const verificationDiv =
+					dialog.querySelector("#verification-div");
 				const searchModeSelect = dialog.querySelector("#search-mode");
 				const guidedSearchDiv = dialog.querySelector("#guided-search");
 				const expertSearchDiv = dialog.querySelector("#expert-search");
@@ -43,8 +51,11 @@ window.onload = async function () {
 				const langInput = dialog.querySelector("#lang");
 				const userDiv = dialog.querySelector("#user-div");
 				const accountInput = dialog.querySelector("#account");
+				const dateDiv = dialog.querySelector("#date-div");
 				const fromDateInput = dialog.querySelector("#from-date");
 				const toDateInput = dialog.querySelector("#to-date");
+				const queryUrlDiv = dialog.querySelector("#queryurl-div");
+				const queryUrlInput = dialog.querySelector("#queryurl-input");
 				const searchBtn = dialog.querySelector("#search-btn");
 				const searchMsg = dialog.querySelector("#search-msg");
 				const noResult = dialog.querySelector("#no-result");
@@ -53,6 +64,7 @@ window.onload = async function () {
 				const maxTootsInput = dialog.querySelector("#max-toots");
 				const extractBtn = dialog.querySelector("#extract-btn");
 				const extractSpinner = dialog.querySelector("#extract-spinner");
+				const queryUrlDisplay = dialog.querySelector("#queryurl");
 				const abortBtn = dialog.querySelector("#abort-btn");
 				const resultsContainer =
 					dialog.querySelector("#results-container");
@@ -104,9 +116,9 @@ window.onload = async function () {
 						instDiv.style.display = "none";
 						instanceContainer.style.display = "none";
 						allDone.style.display = "block";
-						searchContainer.style.display = "block";
 						searchFold.style.display = "block";
 						searchUnfold.style.display = "none";
+						verificationDiv.style.display = "block";
 						verifyApp(userToken);
 					} else {
 						authContainer.style.display = "block";
@@ -143,8 +155,35 @@ window.onload = async function () {
 								"You have been temporarily blocked: click OK to reset your access and try again"
 							)
 						) {
-							window.location.href =
-								"https://truthsocial.com/api/v1/trends";
+							chrome.runtime.sendMessage(
+								{
+									action: "resetAccess",
+									url: "https://truthsocial.com/api/v1/trends",
+								},
+								(response) => {
+									if (response && response.success) {
+										const accessResetListener = (
+											message,
+											sender,
+											sendResponse
+										) => {
+											if (
+												message.action ===
+												"accessResetDone"
+											) {
+												// remove listener after handling
+												chrome.runtime.onMessage.removeListener(
+													accessResetListener
+												);
+												verifyApp(token);
+											}
+										};
+										chrome.runtime.onMessage.addListener(
+											accessResetListener
+										);
+									}
+								}
+							);
 						}
 					} else if (!response.ok) {
 						if (response.status === 429) {
@@ -162,6 +201,13 @@ window.onload = async function () {
 							searchFold.style.display = "none";
 							searchUnfold.style.display = "block";
 						}
+					} else {
+						verificationDiv.textContent = `Application verified successfully ✅`;
+						setTimeout(() => {
+							verificationDiv.style.display = "none";
+							searchContainer.style.display = "block";
+							allWordsInput.focus();
+						}, 1000);
 					}
 				}
 
@@ -443,21 +489,39 @@ window.onload = async function () {
 						expertSearchDiv.style.display = "none";
 						langDiv.style.display = "block";
 						userDiv.style.display = "none";
+						dateDiv.style.display = "block";
+						queryUrlDiv.style.display = "none";
+						allWordsInput.focus();
 					} else if (searchMode === "expert") {
 						guidedSearchDiv.style.display = "none";
 						expertSearchDiv.style.display = "block";
 						langDiv.style.display = "block";
 						userDiv.style.display = "none";
+						dateDiv.style.display = "block";
+						queryUrlDiv.style.display = "none";
+						keywordsInput.focus();
 					} else if (searchMode === "user") {
 						guidedSearchDiv.style.display = "none";
 						expertSearchDiv.style.display = "none";
 						langDiv.style.display = "none";
 						userDiv.style.display = "block";
+						dateDiv.style.display = "block";
+						queryUrlDiv.style.display = "none";
 						accountInput.focus();
+					} else if (searchMode === "url") {
+						guidedSearchDiv.style.display = "none";
+						expertSearchDiv.style.display = "none";
+						langDiv.style.display = "none";
+						userDiv.style.display = "none";
+						dateDiv.style.display = "none";
+						queryUrlDiv.style.display = "block";
+						queryUrlInput.focus();
 					}
 				});
 
+				let queryAttempt = 0;
 				async function buildQueryUrl() {
+					queryAttempt += 1;
 					queryUrl = "https://" + tsInstance + "/api/v2/search?";
 
 					// Concatenate query URL from search elements
@@ -517,8 +581,44 @@ window.onload = async function () {
 											"You have been temporarily blocked: click OK to reset your access and try again"
 										)
 									) {
-										window.location.href =
-											"https://truthsocial.com/api/v1/trends";
+										chrome.runtime.sendMessage(
+											{
+												action: "resetAccess",
+												url: queryUrl,
+											},
+											(response) => {
+												if (
+													response &&
+													response.success
+												) {
+													const accessResetListener2 =
+														(
+															message,
+															sender,
+															sendResponse
+														) => {
+															if (
+																message.action ===
+																"accessResetDone"
+															) {
+																chrome.runtime.onMessage.removeListener(
+																	accessResetListener2
+																);
+																buildQueryUrl();
+																return;
+															}
+														};
+													chrome.runtime.onMessage.addListener(
+														accessResetListener2
+													);
+												} else {
+													console.error(
+														"Failed to reset access"
+													);
+													return;
+												}
+											}
+										);
 									}
 								}
 								window.alert("Account not found");
@@ -543,40 +643,47 @@ window.onload = async function () {
 						const excludeReposts =
 							dialog.querySelector("#exclude-reposts").checked;
 						queryUrl = `https://truthsocial.com/api/v1/accounts/${account}/statuses?exclude_replies=${excludeReplies}&exclude_reposts=${excludeReposts}&limit=40`;
-					} else {
+					} else if (
+						searchMode === "guided" ||
+						searchMode === "expert"
+					) {
 						queryUrl =
 							queryUrl + "&type=statuses&resolve=true&limit=40";
 					}
-					if (fromDate) {
-						if (searchMode === "user") {
-							queryUrl += "&since_id=" + min_id;
-						} else if (searchMode !== "user") {
-							if (allWords || anyWords || thisPhrase) {
+					if (searchMode !== "url") {
+						if (fromDate) {
+							if (searchMode === "user") {
+								queryUrl += "&since_id=" + min_id;
+							} else if (searchMode !== "user") {
+								if (allWords || anyWords || thisPhrase) {
+									queryUrl = queryUrl + "&";
+								}
+								queryUrl = queryUrl + "min_id=" + min_id;
+							}
+						}
+						if (toDate) {
+							if (
+								searchMode === "user" ||
+								allWords ||
+								anyWords ||
+								thisPhrase
+							) {
 								queryUrl = queryUrl + "&";
 							}
-							queryUrl = queryUrl + "min_id=" + min_id;
+							queryUrl = queryUrl + "max_id=" + max_id;
 						}
 					}
-					if (toDate) {
-						if (
-							searchMode === "user" ||
-							allWords ||
-							anyWords ||
-							thisPhrase
-						) {
-							queryUrl = queryUrl + "&";
-						}
-						queryUrl = queryUrl + "max_id=" + max_id;
+					if (searchMode === "url" && queryUrlInput.value) {
+						queryUrl = queryUrlInput.value;
 					}
 					queryUrl = encodeURI(queryUrl);
-					const queryurlDiv = dialog.querySelector("#queryurl");
 					const queryLink = document.createElement("a");
 					queryLink.setAttribute("href", queryUrl);
 					queryLink.setAttribute("target", "_blank");
 					queryLink.textContent = queryUrl;
 					queryLink.style.fontWeight = "normal";
-					queryurlDiv.textContent = "Query URL: ";
-					queryurlDiv.appendChild(queryLink);
+					queryUrlDisplay.textContent = "Query URL: ";
+					queryUrlDisplay.appendChild(queryLink);
 
 					// Fetch query response from server
 					try {
@@ -585,9 +692,12 @@ window.onload = async function () {
 							!keywords &&
 							!allWords &&
 							!anyWords &&
-							!thisPhrase
+							!thisPhrase &&
+							!queryUrlInput.value
 						) {
-							window.alert("Please provide keywords");
+							window.alert(
+								"Please provide keywords or a query URL"
+							);
 							searchMsg.style.display = "none";
 							return;
 						} else if (searchMode === "user" && !account) {
@@ -611,53 +721,107 @@ window.onload = async function () {
 							authUnfold.style.display = "none";
 							throw new Error("User needs to authorize app");
 						} else if (response.status === 403) {
-							// searchMsg.style.display = "none";
-							// window.alert(
-							// 	"You have been temporarily blocked: close Truth Social, wait a while and try again, or use a VPN."
-							// );
-							// throw new Error("User needs to solve captcha");
 							if (
 								window.confirm(
-									"You have been temporarily blocked: click OK to reset your access and try again"
+									`You have been temporarily blocked (query attempt ${queryAttempt}): click OK to reset your access and try again`
 								)
 							) {
-								window.location.href =
-									"https://truthsocial.com/api/v1/trends";
+								chrome.runtime.sendMessage(
+									{
+										action: "resetAccess",
+										url: queryUrl,
+									},
+									(response) => {
+										if (response && response.success) {
+											const accessResetListener3 = (
+												message,
+												sender,
+												sendResponse
+											) => {
+												if (
+													message.action ===
+													"accessResetDone"
+												) {
+													chrome.runtime.onMessage.removeListener(
+														accessResetListener3
+													);
+													buildQueryUrl();
+													return;
+												}
+											};
+											chrome.runtime.onMessage.addListener(
+												accessResetListener3
+											);
+										} else {
+											console.error(
+												"Failed to reset access"
+											);
+											return;
+										}
+									}
+								);
 							}
 						} else if (response.status === 429) {
-							window.alert(
-								"You are being rate limited. Please wait and try again later."
-							);
-							const html = await response.text();
-							dialog.innerHTML = html;
-							setTimeout(() => {
-								dialog.remove();
-							}, 1000);
-							searchMsg.style.display = "none";
-							throw new Error(
-								"Could not fetch: user is being rate limited"
+							const rateLimitListener = (
+								message,
+								sender,
+								sendResponse
+							) => {
+								if (message.action === "rateLimitHit") {
+									chrome.runtime.onMessage.removeListener(
+										rateLimitListener
+									);
+									let retryAfter = Number(message.retryAfter);
+									if (retryAfter === 0) {
+										window.alert(
+											"You have been blocked: try again later."
+										);
+										searchMsg.textContent = "";
+										return;
+									} else {
+										searchMsg.textContent = `Waiting for rate limit to lift... ${retryAfter} seconds remaining`;
+										const interval = setInterval(() => {
+											searchMsg.textContent = `Waiting for rate limit to lift... ${retryAfter} seconds remaining`;
+											retryAfter--;
+											if (retryAfter < 0) {
+												clearInterval(interval);
+												buildQueryUrl();
+											}
+										}, 1000);
+										closeBtn.onclick = () => {
+											clearInterval(interval);
+											dialog.close();
+											dialog.remove();
+											return;
+										};
+									}
+								}
+							};
+							chrome.runtime.onMessage.addListener(
+								rateLimitListener
 							);
 						} else if (!response || !response.ok) {
 							window.alert(
-								`Error fetching results: status ${response.status}`
+								`Error fetching query URL: status ${response.status}`
 							);
 							searchMsg.style.display = "none";
 							throw new Error("Could not fetch search results.");
-						}
-						const searchData = await response.json();
-						let searchResults = searchData.statuses
-							? searchData.statuses
-							: searchData;
-						if (searchResults.length == 0) {
-							searchMsg.style.display = "none";
-							noResult.style.display = "block";
 						} else {
-							searchMsg.style.display = "none";
-							searchContainer.style.display = "none";
-							searchFold.style.display = "none";
-							searchUnfold.style.display = "block";
-							extractContainer.style.display = "block";
-							extractBtn.style.display = "block";
+							const searchData = await response.json();
+							let searchResults = searchData.statuses
+								? searchData.statuses
+								: searchData;
+							if (searchResults.length == 0) {
+								searchMsg.style.display = "none";
+								noResult.style.display = "block";
+							} else {
+								searchMsg.style.display = "none";
+								searchContainer.style.display = "none";
+								searchFold.style.display = "none";
+								searchUnfold.style.display = "block";
+								extractContainer.style.display = "block";
+								extractBtn.style.display = "block";
+							}
 						}
 					} catch (error) {
 						console.error(error);
@@ -724,6 +888,7 @@ window.onload = async function () {
 					abort = true;
 				});
 				// Function to scrape toots
+				let attempt = 0;
 				async function scrape() {
 					let tootSet = new Set();
 					abort = false;
@@ -739,11 +904,10 @@ window.onload = async function () {
 					skippedItems = 0;
 
 					while (statuses.length < maxToots) {
-						await processPage();
-						await new Promise((resolve) =>
-							setTimeout(resolve, 1000)
-						);
-
+						const result = await processPage();
+						if (!result) {
+							break;
+						}
 						if (statuses.length >= maxToots || abort) {
 							abortBtn.textContent = "Abort";
 							abortBtn.style.display = "none";
@@ -755,6 +919,7 @@ window.onload = async function () {
 					}
 
 					async function processPage() {
+						attempt += 1;
 						try {
 							if (maxToots) {
 								maxToots = Number(maxToots);
@@ -763,7 +928,7 @@ window.onload = async function () {
 								nextQueryUrl = queryUrl;
 							} else if (p > 1) {
 								nextQueryUrl = new URL(queryUrl);
-								if (searchMode === "user") {
+								if (searchMode === "user" || nextQueryUrl.pathname.includes("/api/v1/accounts/")) {
 									nextQueryUrl.searchParams.set(
 										"max_id",
 										id.toString()
@@ -777,95 +942,231 @@ window.onload = async function () {
 								nextQueryUrl = nextQueryUrl.toString();
 							}
 							nextQueryUrl = nextQueryUrl;
-							const response = await fetch(nextQueryUrl, {
-								headers: {
-									Authorization: `Bearer ${userToken}`,
-									scope: "read",
-								},
-							});
-							if (response.status === 401) {
-								window.alert(
-									"Application not authorized: please authenticate with Truth Social"
-								);
-								abort = true;
-								throw new Error(
-									"Could not fetch: not authenticated"
-								);
-							} else if (!response.ok) {
-								window.alert(
-									`Error fetching results: HTTP error ${response.status}`
-								);
-								abort = true;
-								throw new Error(
-									"HTTP error, could not fetch search results"
-								);
-							}
-							const data = await response.json();
-							const results = data.statuses
-								? data.statuses
-								: data;
-							offset += results.length;
-							if (
-								!results.length ||
-								(offset > 1 && results.length <= 1)
-							) {
-								abort = true;
-							}
-							for (let s of results) {
-								if (statuses.length >= maxToots) {
+							while (true) {
+								if (abort) return false;
+								const response = await fetch(nextQueryUrl, {
+									headers: {
+										Authorization: `Bearer ${userToken}`,
+										scope: "read",
+									},
+								});
+								if (response.status === 401) {
+									window.alert(
+										"Application not authorized: please authenticate with Truth Social"
+									);
 									abort = true;
-									break;
-								}
-								const parser = new DOMParser();
-								if (tootSet.has(s.id)) {
+									throw new Error(
+										"Could not fetch: not authenticated"
+									);
+								} else if (response.status === 403) {
+									if (
+										window.confirm(
+											"You have been temporarily blocked: click OK to reset your access and try again"
+										)
+									) {
+										const ok = await new Promise(
+											(resolve) => {
+												chrome.runtime.sendMessage(
+													{
+														action: "resetAccess",
+														url: nextQueryUrl,
+													},
+													(response) => {
+														if (
+															response &&
+															response.success
+														) {
+															const accessResetListener4 =
+																(
+																	message,
+																	sender,
+																	sendResponse
+																) => {
+																	if (
+																		message.action ===
+																		"accessResetDone"
+																	) {
+																		chrome.runtime.onMessage.removeListener(
+																			accessResetListener4
+																		);
+																		resolve(
+																			true
+																		);
+																	}
+																};
+															chrome.runtime.onMessage.addListener(
+																accessResetListener4
+															);
+														} else {
+															console.error(
+																"Failed to reset access"
+															);
+															resolve(false);
+														}
+													}
+												);
+											}
+										);
+										if (!ok) {
+											abort = true;
+											return false;
+										}
+										continue;
+									}
+								} else if (response.status === 429) {
+									const retryAfter = await new Promise(
+										(resolve) => {
+											const listener = (message) => {
+												if (
+													message &&
+													message.action ===
+														"rateLimitHit"
+												) {
+													chrome.runtime.onMessage.removeListener(
+														listener
+													);
+													resolve(
+														Number(
+															message.retryAfter
+														)
+													);
+												}
+											};
+											chrome.runtime.onMessage.addListener(
+												listener
+											);
+										}
+									);
+									if (
+										!retryAfter ||
+										Number(retryAfter) === 0
+									) {
+										window.alert(
+											"You have been blocked: try again later by copying and pasting the query URL."
+										);
+										resultsMsg.textContent = "";
+										queryUrlDisplay.textContent = "Click here to copy query URL";
+										queryUrlDisplay.style.cursor = "pointer";
+										queryUrlDisplay.style.textDecoration = "underline";
+										queryUrlDisplay.style.fontWeight = "bold";
+										queryUrlDisplay.onclick = () => {
+											navigator.clipboard.writeText(
+												nextQueryUrl
+											);
+											queryUrlDisplay.textContent =
+												"Query URL copied to clipboard!";
+												setTimeout(() => {
+													queryUrlDisplay.textContent =
+														"Click here to copy query URL";
+														queryUrlDisplay.removeAttribute("style");
+												}, 1000);
+										};
+										abort = true;
+										return false;
+									}
+									let seconds = Number(retryAfter);
+									resultsMsg.textContent = `Waiting for rate limit to lift... ${seconds} seconds remaining`;
+									await new Promise((resolve) => {
+										const interval = setInterval(() => {
+											if (abort) {
+												clearInterval(interval);
+												resolve();
+												return;
+											}
+											seconds--;
+											resultsMsg.textContent = `Waiting for rate limit to lift... ${seconds} seconds remaining`;
+											if (seconds < 0) {
+												clearInterval(interval);
+												resolve();
+											}
+										}, 1000);
+									});
 									continue;
-								}
-								if (lang && s.language !== lang) {
-									continue;
-								}
-								if (
-									fromDate &&
-									s.created_at < fromDate.toISOString()
-								) {
+								} else if (!response.ok) {
+									window.alert(
+										`Error fetching results: HTTP error ${response.status}`
+									);
 									abort = true;
-									break;
-								}
-								if (
-									toDate &&
-									s.created_at > toDate.toISOString()
-								) {
-									continue;
-								}
-
-								tootSet.add(s.id);
-								let rawText = s.content;
-								let rawTextHtml = parser.parseFromString(
-									rawText,
-									"text/html"
-								);
-								let rawTextString =
-									rawTextHtml.documentElement.innerHTML;
-								rawTextString = rawTextString
-									.replaceAll("<br>", "\n")
-									.replaceAll("<p>", "\n")
-									.replaceAll(/<.+?>/gu, "");
-								s.content = rawTextString.normalize("NFC");
-								if (!s.content || s.content.trim() === "") {
-									skippedItems++;
-									continue;
-								}
-								statuses.push(s);
-								id = s.id;
-								if (maxToots !== Infinity) {
-									resultsMsg.textContent = `${statuses.length} out of ${maxToots} extracted...`;
+									throw new Error(
+										"HTTP error, could not fetch search results"
+									);
 								} else {
-									resultsMsg.textContent = `${statuses.length} post(s) extracted...`;
-								}
-								if (statuses.length > maxToots) {
-									return;
+									const data = await response.json();
+									const results = data.statuses
+										? data.statuses
+										: data;
+									offset += results.length;
+									if (
+										!results.length ||
+										(offset > 1 && results.length <= 1)
+									) {
+										abort = true;
+									}
+									for (let s of results) {
+										if (statuses.length >= maxToots) {
+											abort = true;
+											break;
+										}
+										const parser = new DOMParser();
+										if (tootSet.has(s.id)) {
+											continue;
+										}
+										if (lang && s.language !== lang) {
+											continue;
+										}
+										if (
+											fromDate &&
+											s.created_at <
+												fromDate.toISOString()
+										) {
+											abort = true;
+											break;
+										}
+										if (
+											toDate &&
+											s.created_at > toDate.toISOString()
+										) {
+											continue;
+										}
+
+										tootSet.add(s.id);
+										let rawText = s.content;
+										let rawTextHtml =
+											parser.parseFromString(
+												rawText,
+												"text/html"
+											);
+										let rawTextString =
+											rawTextHtml.documentElement
+												.innerHTML;
+										rawTextString = rawTextString
+											.replaceAll("<br>", "\n")
+											.replaceAll("<p>", "\n")
+											.replaceAll(/<.+?>/gu, "");
+										s.content =
+											rawTextString.normalize("NFC");
+										if (
+											!s.content ||
+											s.content.trim() === ""
+										) {
+											skippedItems++;
+											continue;
+										}
+										statuses.push(s);
+										id = s.id;
+										if (maxToots !== Infinity) {
+											resultsMsg.textContent = `${statuses.length} out of ${maxToots} extracted...`;
+										} else {
+											resultsMsg.textContent = `${statuses.length} post(s) extracted...`;
+										}
+										if (statuses.length > maxToots) {
+											return;
+										}
+									}
+									p++;
+									return true;
 								}
 							}
-							p++;
 						} catch (error) {
 							console.error(error);
 						}
@@ -1131,8 +1432,8 @@ window.onload = async function () {
 				});
 
 				// Listen to download button
-				dlConfirmBtn.addEventListener("click", () => {
-					buildData();
+				dlConfirmBtn.addEventListener("click", async () => {
+					await buildData();
 					if (fileFormat === "json") {
 						downloadJson();
 					} else if (fileFormat === "csv") {
@@ -1152,39 +1453,43 @@ window.onload = async function () {
 						.reduce((acc, key) => acc && acc[key], obj);
 				}
 
-				function buildData() {
-					const anonymize = anonymizeCheckbox.checked;
-					const accts = new Set();
-					const pseudos = {};
-					if (anonymize) {
-						for (let s of statuses) {
-							accts.add(s.account.acct);
-						}
-						for (let acct of accts) {
-							pseudos[acct] = `user_${
-								Object.keys(pseudos).length + 1
-							}`;
-						}
-					}
-					posts = [];
-					const checkboxes = dlDialog.querySelectorAll(
-						'input[type="checkbox"].data-item'
-					);
-					for (let s of statuses) {
+				async function buildData() {
+					return new Promise((resolve) => {
+						const anonymize = anonymizeCheckbox.checked;
+						const accts = new Set();
+						const pseudos = {};
 						if (anonymize) {
-							s.account.acct = pseudos[s.account.acct];
-							s.account.display_name = pseudos[s.account.acct];
-						}
-						let post = {};
-						for (let checkbox of checkboxes) {
-							if (checkbox.checked) {
-								const key = checkbox.id;
-								const value = getNestedValue(s, key);
-								post[key.replaceAll(".", "-")] = value;
+							for (let s of statuses) {
+								accts.add(s.account.acct);
+							}
+							for (let acct of accts) {
+								pseudos[acct] = `user_${
+									Object.keys(pseudos).length + 1
+								}`;
 							}
 						}
-						posts.push(post);
-					}
+						posts = [];
+						const checkboxes = dlDialog.querySelectorAll(
+							'input[type="checkbox"].data-item'
+						);
+						for (let s of statuses) {
+							if (anonymize) {
+								s.account.acct = pseudos[s.account.acct];
+								s.account.display_name =
+									pseudos[s.account.acct];
+							}
+							let post = {};
+							for (let checkbox of checkboxes) {
+								if (checkbox.checked) {
+									const key = checkbox.id;
+									const value = getNestedValue(s, key);
+									post[key.replaceAll(".", "-")] = value;
+								}
+							}
+							posts.push(post);
+						}
+						resolve();
+					});
 				}
 
 				// Download functions
@@ -1447,6 +1752,8 @@ window.onload = async function () {
 					}
 					location.reload();
 				});
+				sendResponse({ success: true });
+				return true;
 			}
 		}
 	);

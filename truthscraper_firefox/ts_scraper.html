@@ -39,12 +39,21 @@
 		<div id="search-unfold" class="fold" style="display: none">
 			Build your search query
 		</div>
-		<div id="search-container" display="block">
+		<div id="verification-div" style="display: none">
+			<div
+				class="masto-spinner"
+				id="verification-spinner"
+				style="display: inline-block"
+			></div>
+			Verifying application...
+		</div>
+		<div id="search-container" style="display: none">
 			<div>
 				<select name="search-mode" id="search-mode" class="ts-scraper">
 					<option value="guided">Guided search</option>
 					<option value="expert">Expert search</option>
 					<option value="user">User history</option>
+					<option value="url">Query URL</option>
 				</select>
 			</div>
 			<div id="guided-search">
@@ -141,24 +150,36 @@
 					>
 				</div>
 			</div>
-			<div>
-				<label for="from-date">From date (inclusive): </label>
-				<input
-					id="from-date"
-					class="ts-scraper"
-					name="from-date"
-					type="date"
-					placeholder="From date"
-				/>
+			<div id="date-div">
+				<div>
+					<label for="from-date">From date (inclusive): </label>
+					<input
+						id="from-date"
+						class="ts-scraper"
+						name="from-date"
+						type="date"
+						placeholder="From date"
+					/>
+				</div>
+				<div>
+					<label for="to-date">Before date (exclusive): </label>
+					<input
+						id="to-date"
+						class="ts-scraper"
+						name="to-date"
+						type="date"
+						placeholder="To date"
+					/>
+				</div>
 			</div>
-			<div>
-				<label for="to-date">Before date (exclusive): </label>
+			<div id="queryurl-div" style="display: none">
+				<label for="queryurl-input">Paste a query URL: </label>
 				<input
-					id="to-date"
+					id="queryurl-input"
 					class="ts-scraper"
-					name="to-date"
-					type="date"
-					placeholder="To date"
+					name="queryurl-input"
+					type="text"
+					placeholder="https://truthsocial.com/api/..."
 				/>
 			</div>
 			<br />
@@ -244,10 +265,8 @@
 			<div id="options-container">
 				<div>
 					<label for="anonymize">
-						<input
-							type="checkbox"
-							id="anonymize"
-						/>Anonymize posts</label
+						<input type="checkbox" id="anonymize" />Anonymize
+						posts</label
 					>
 				</div>
 				<div>
