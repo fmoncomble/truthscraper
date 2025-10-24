@@ -432,7 +432,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					instance: instance,
 				},
 				async (response) => {
-					console.log("Auth started", response);
 					if (!response) {
 						console.error("No response from background for auth");
 						return;
@@ -883,7 +882,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				maxTootsInput.disabled = false;
 				extractBtn.disabled = false;
 				extractSpinner.style.display = "none";
-				resultsMsg.textContent = statuses.length + " toot(s) extracted";
+				resultsMsg.textContent = statuses.length + " post(s) extracted";
 				showOptions(statuses);
 				resetBtn.style.display = "inline-block";
 			} catch (error) {
@@ -1496,7 +1495,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			spinner.style.display = "inline-block";
 			let xml = "<Text>";
 			for (let p of posts) {
-				let postData = "<lb/>\n<toot";
+				let postData = "<lb/>\n<post";
 				for (let [key, value] of Object.entries(p)) {
 					if (typeof value === "string") {
 						p[key] = value
@@ -1527,7 +1526,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					}
 				}
 				postData += `<lb/>${text.replaceAll(/\n/g, "<lb/>")}`;
-				postData += "</toot><lb/><lb/>\n";
+				postData += "</post><lb/><lb/>\n";
 				xml += postData;
 			}
 			xml += `</Text>`;
