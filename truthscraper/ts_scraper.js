@@ -658,9 +658,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					dialog.querySelector("#exclude-replies").checked;
 				const excludeReposts =
 					dialog.querySelector("#exclude-reposts").checked;
-				queryUrl = `https://truthsocial.com/api/v1/accounts/${account}/statuses?exclude_replies=${excludeReplies}&exclude_reposts=${excludeReposts}&limit=40`;
+				queryUrl = `https://truthsocial.com/api/v1/accounts/${account}/statuses?exclude_replies=${excludeReplies}&exclude_reposts=${excludeReposts}`;
 			} else if (searchMode === "guided" || searchMode === "expert") {
-				queryUrl = queryUrl + "&type=statuses&resolve=true&limit=40";
+				queryUrl = queryUrl + "&type=statuses&resolve=true";
 			}
 			if (searchMode !== "url") {
 				if (fromDate) {
@@ -837,6 +837,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		searchBtn.addEventListener("click", () => {
 			extractContainer.style.display = "none";
 			resultsContainer.style.display = "none";
+			maxTootsDiv.style.display = "block";
 			searchMsg.style.display = "block";
 			noResult.style.display = "none";
 			buildQueryUrl();
@@ -897,6 +898,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		});
 		// Function to scrape toots
 		let attempt = 0;
+		let downloaded = false;
 		async function scrape() {
 			let tootSet = new Set();
 			abort = false;
@@ -1046,20 +1048,27 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 									navigator.clipboard.writeText(nextQueryUrl);
 									queryUrlDisplay.textContent =
 										"Query URL copied to clipboard!";
-									setTimeout(() => {
-										queryUrlDisplay.removeAttribute(
-											"style"
-										);
-										searchUnfold.click();
-										searchModeSelect.focus();
-										searchModeSelect.value = "url";
-										searchModeSelect.dispatchEvent(
-											new Event("change")
-										);
-										queryUrlInput.value = nextQueryUrl;
-										extractContainer.style.display = "none";
-										resultsContainer.style.display = "none";
-									}, 1000);
+									if (downloaded) {
+										setTimeout(() => {
+											queryUrlDisplay.removeAttribute(
+												"style"
+											);
+											searchUnfold.click();
+											searchModeSelect.focus();
+											searchModeSelect.value = "url";
+											searchModeSelect.dispatchEvent(
+												new Event("change")
+											);
+											queryUrlInput.value = nextQueryUrl;
+											extractContainer.style.display =
+												"none";
+											resultsContainer.style.display =
+												"none";
+											statuses = [];
+											posts = [];
+											downloaded = false;
+										}, 1000);
+									}
 								};
 								abort = true;
 								return false;
@@ -1100,6 +1109,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 								!results.length ||
 								(offset > 1 && results.length <= 1)
 							) {
+								window.alert('No more results to fetch.');
 								abort = true;
 							}
 							for (let s of results) {
@@ -1127,7 +1137,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 								) {
 									continue;
 								}
-
+								id = s.id;
 								tootSet.add(s.id);
 								let rawText = s.content;
 								let rawTextHtml = parser.parseFromString(
@@ -1146,7 +1156,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 									continue;
 								}
 								statuses.push(s);
-								id = s.id;
 								if (maxToots !== Infinity) {
 									resultsMsg.textContent = `${statuses.length} out of ${maxToots} extracted...`;
 								} else {
@@ -1167,6 +1176,16 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		}
 
 		// Show data options dialog
+		function getCheckedMetadata() {
+			return new Promise((resolve) => {
+				chrome.storage.local.get("tsCheckedMetadata", (results) => {
+					resolve(results.tsCheckedMetadata || []);
+				});
+			});
+		}
+
+		let checkedMetadata = await getCheckedMetadata();
+
 		async function showOptions(statuses) {
 			const keyTree = await buildKeyTree(statuses);
 			const container = dlDialog.querySelector("#keys-container");
@@ -1231,7 +1250,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				return tree;
 			}
 
-			function generateListTree(tree, container) {
+			async function generateListTree(tree, container) {
 				const ul = document.createElement("ul");
 				ul.style.listStyleType = "none";
 
@@ -1248,7 +1267,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 							key === "content" ||
 							key === "account.acct" ||
 							key === "created_at" ||
-							key === "url"
+							key === "url" ||
+							(checkedMetadata &&
+								checkedMetadata.length &&
+								checkedMetadata.includes(key))
 						) {
 							checkbox.checked = true;
 						}
@@ -1322,6 +1344,13 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 						});
 					}
 				}
+				Array.from(
+					container.querySelectorAll("input[type='checkbox']")
+				).forEach((checkbox) => {
+					if (checkbox.checked) {
+						updateParentCheckboxes(checkbox);
+					}
+				});
 				container.appendChild(ul);
 			}
 		}
@@ -1404,6 +1433,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			} else if (fileFormat === "xlsx") {
 				downloadXlsx();
 			}
+			downloaded = true;
 		});
 
 		function getNestedValue(obj, keyPath) {
@@ -1431,6 +1461,12 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				const checkboxes = dlDialog.querySelectorAll(
 					'input[type="checkbox"].data-item'
 				);
+				let checkedCheckboxes = Array.from(checkboxes)
+					.filter((checkbox) => checkbox.checked)
+					.map((checkbox) => checkbox.id);
+				chrome.storage.local.set({
+					tsCheckedMetadata: checkedCheckboxes,
+				});
 				for (let s of statuses) {
 					if (anonymize) {
 						s.account.acct = pseudos[s.account.acct];
