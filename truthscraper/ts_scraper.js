@@ -49,12 +49,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		const verificationDiv = dialog.querySelector("#verification-div");
 		const searchModeSelect = dialog.querySelector("#search-mode");
 		const guidedSearchDiv = dialog.querySelector("#guided-search");
-		const expertSearchDiv = dialog.querySelector("#expert-search");
-		const keywordsInput = dialog.querySelector("#keywords");
 		const allWordsInput = dialog.querySelector("#all-words");
-		const anyWordsInput = dialog.querySelector("#any-words");
 		const thisPhraseInput = dialog.querySelector("#this-phrase");
-		const noWordsInput = dialog.querySelector("#no-words");
 		const langDiv = dialog.querySelector("#language-div");
 		const langInput = dialog.querySelector("#lang");
 		const userDiv = dialog.querySelector("#user-div");
@@ -507,23 +503,13 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			searchMode = searchModeSelect.value;
 			if (searchMode === "guided") {
 				guidedSearchDiv.style.display = "block";
-				expertSearchDiv.style.display = "none";
 				langDiv.style.display = "block";
 				userDiv.style.display = "none";
 				dateDiv.style.display = "block";
 				queryUrlDiv.style.display = "none";
 				allWordsInput.focus();
-			} else if (searchMode === "expert") {
-				guidedSearchDiv.style.display = "none";
-				expertSearchDiv.style.display = "block";
-				langDiv.style.display = "block";
-				userDiv.style.display = "none";
-				dateDiv.style.display = "block";
-				queryUrlDiv.style.display = "none";
-				keywordsInput.focus();
 			} else if (searchMode === "user") {
 				guidedSearchDiv.style.display = "none";
-				expertSearchDiv.style.display = "none";
 				langDiv.style.display = "none";
 				userDiv.style.display = "block";
 				dateDiv.style.display = "block";
@@ -531,7 +517,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				accountInput.focus();
 			} else if (searchMode === "url") {
 				guidedSearchDiv.style.display = "none";
-				expertSearchDiv.style.display = "none";
 				langDiv.style.display = "none";
 				userDiv.style.display = "none";
 				dateDiv.style.display = "none";
@@ -546,43 +531,23 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			queryUrl = "https://" + tsInstance + "/api/v2/search?";
 
 			// Concatenate query URL from search elements
-			let keywords = keywordsInput.value;
 			let allWords = allWordsInput.value.replaceAll(" ", " AND ");
-			let anyWords = anyWordsInput.value.replaceAll(" ", " OR ");
 			let thisPhrase = thisPhraseInput.value;
-			let noWords = noWordsInput.value.replaceAll(" ", " OR ");
 			lang = langInput.value;
 			let account = accountInput.value.replaceAll(" ", " AND ");
 			if (fromDate) {
 			}
-			if (searchMode === "expert") {
-				keywords = `(${keywords})`;
-				queryUrl = queryUrl + "q=" + keywords;
-			} else if (searchMode === "guided") {
-				if (allWords || anyWords || thisPhrase) {
-					queryUrl = queryUrl + "q=";
-				}
+			if (allWords || thisPhrase) {
+				queryUrl = queryUrl + "q=";
+			}
+			if (allWords) {
+				queryUrl = queryUrl + `${allWords}`;
+			}
+			if (thisPhrase) {
 				if (allWords) {
-					queryUrl = queryUrl + `(${allWords})`;
+					queryUrl = queryUrl + " AND ";
 				}
-				if (anyWords) {
-					if (allWords) {
-						queryUrl = queryUrl + " AND ";
-					}
-					queryUrl = queryUrl + `(${anyWords})`;
-				}
-				if (thisPhrase) {
-					if (allWords || anyWords) {
-						queryUrl = queryUrl + " AND ";
-					}
-					queryUrl = queryUrl + '("' + thisPhrase + '")';
-				}
-				if (noWords) {
-					if (allWords || anyWords || thisPhrase) {
-						queryUrl = queryUrl + " NOT ";
-					}
-					queryUrl = queryUrl + `(${noWords})`;
-				}
+				queryUrl = queryUrl + '"' + thisPhrase + '"';
 			}
 			if (searchMode === "user" && account) {
 				try {
@@ -667,19 +632,14 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					if (searchMode === "user") {
 						queryUrl += "&since_id=" + min_id;
 					} else if (searchMode !== "user") {
-						if (allWords || anyWords || thisPhrase) {
+						if (allWords || thisPhrase) {
 							queryUrl = queryUrl + "&";
 						}
 						queryUrl = queryUrl + "min_id=" + min_id;
 					}
 				}
 				if (toDate) {
-					if (
-						searchMode === "user" ||
-						allWords ||
-						anyWords ||
-						thisPhrase
-					) {
+					if (searchMode === "user" || allWords || thisPhrase) {
 						queryUrl = queryUrl + "&";
 					}
 					queryUrl = queryUrl + "max_id=" + max_id;
@@ -701,9 +661,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			try {
 				if (
 					searchMode !== "user" &&
-					!keywords &&
 					!allWords &&
-					!anyWords &&
 					!thisPhrase &&
 					!queryUrlInput.value
 				) {
@@ -1109,7 +1067,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 								!results.length ||
 								(offset > 1 && results.length <= 1)
 							) {
-								window.alert('No more results to fetch.');
+								window.alert("No more results to fetch.");
 								abort = true;
 							}
 							for (let s of results) {
@@ -1542,15 +1500,17 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 							.replaceAll(/'/g, "&apos;")
 							.replaceAll(/\u00A0/g, " ");
 					}
-					if (key.includes('_')) {
+					if (key.includes("_")) {
 						delete p[key];
-						let keyParts = key.split('_');
+						let keyParts = key.split("_");
 						keyParts.forEach((part, index) => {
 							if (index > 0) {
-								keyParts[index] = part.charAt(0).toUpperCase() + part.slice(1);
+								keyParts[index] =
+									part.charAt(0).toUpperCase() +
+									part.slice(1);
 							}
 						});
-						key = keyParts.join('');
+						key = keyParts.join("");
 						p[key] = value;
 					}
 					if (key !== "content" && key !== "url") {

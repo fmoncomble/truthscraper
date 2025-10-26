@@ -51,7 +51,6 @@
 			<div>
 				<select name="search-mode" id="search-mode" class="ts-scraper">
 					<option value="guided">Guided search</option>
-					<option value="expert">Expert search</option>
 					<option value="user">User history</option>
 					<option value="url">Query URL</option>
 				</select>
@@ -68,15 +67,6 @@
 				</div>
 				<div>
 					<input
-						id="any-words"
-						class="ts-scraper"
-						name="any-words"
-						type="text"
-						placeholder="Any of these words"
-					/>
-				</div>
-				<div>
-					<input
 						id="this-phrase"
 						class="ts-scraper"
 						name="this-phrase"
@@ -84,27 +74,6 @@
 						placeholder="This exact phrase"
 					/>
 				</div>
-				<input
-					id="no-words"
-					class="ts-scraper"
-					name="no-words"
-					type="text"
-					placeholder="Words to exclude"
-				/>
-			</div>
-			<div id="expert-search" style="display: none">
-				<div id="expert-instructions">
-					Type the keywords you want to search for.<br />You may use
-					booleans (AND, OR, NOT), quotes, and parentheses for
-					grouping.
-				</div>
-				<input
-					id="keywords"
-					class="ts-scraper"
-					name="keywords"
-					type="text"
-					placeholder="Keywords"
-				/>
 			</div>
 			<div id="language-div">
 				<input
