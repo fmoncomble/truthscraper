@@ -658,9 +658,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					dialog.querySelector("#exclude-replies").checked;
 				const excludeReposts =
 					dialog.querySelector("#exclude-reposts").checked;
-				queryUrl = `https://truthsocial.com/api/v1/accounts/${account}/statuses?exclude_replies=${excludeReplies}&exclude_reposts=${excludeReposts}`;
+				queryUrl = `https://truthsocial.com/api/v1/accounts/${account}/statuses?exclude_replies=${excludeReplies}&exclude_reposts=${excludeReposts}&limit=20`;
 			} else if (searchMode === "guided" || searchMode === "expert") {
-				queryUrl = queryUrl + "&type=statuses&resolve=true";
+				queryUrl = queryUrl + "&type=statuses&resolve=true&limit=20";
 			}
 			if (searchMode !== "url") {
 				if (fromDate) {
