@@ -1542,6 +1542,17 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 							.replaceAll(/'/g, "&apos;")
 							.replaceAll(/\u00A0/g, " ");
 					}
+					if (key.includes('_')) {
+						delete p[key];
+						let keyParts = key.split('_');
+						keyParts.forEach((part, index) => {
+							if (index > 0) {
+								keyParts[index] = part.charAt(0).toUpperCase() + part.slice(1);
+							}
+						});
+						key = keyParts.join('');
+						p[key] = value;
+					}
 					if (key !== "content" && key !== "url") {
 						postData += ` ${key}="${p[key]}"`;
 					}
