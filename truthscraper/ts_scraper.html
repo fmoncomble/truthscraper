@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 	<body>
 		<div class="close-btn">❌</div>
@@ -43,8 +43,7 @@
 			<div
 				class="masto-spinner"
 				id="verification-spinner"
-				style="display: inline-block"
-			></div>
+				style="display: inline-block"></div>
 			Verifying application...
 		</div>
 		<div id="search-container" style="display: none">
@@ -62,8 +61,7 @@
 						class="ts-scraper"
 						name="all-words"
 						type="text"
-						placeholder="All of these words"
-					/>
+						placeholder="All of these words" />
 				</div>
 				<div>
 					<input
@@ -71,8 +69,7 @@
 						class="ts-scraper"
 						name="this-phrase"
 						type="text"
-						placeholder="This exact phrase"
-					/>
+						placeholder="This exact phrase" />
 				</div>
 			</div>
 			<div id="language-div">
@@ -81,8 +78,7 @@
 					class="ts-scraper"
 					name="lang"
 					type="text"
-					placeholder="Language (2-letter ISO code)"
-				/>
+					placeholder="Language (2-letter ISO code)" />
 				<a
 					href="https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes"
 					target="_blank"
@@ -96,26 +92,22 @@
 					class="ts-scraper"
 					name="account"
 					type="text"
-					placeholder="From this account"
-				/>
+					placeholder="From this account" />
 				<div
 					id="user-options"
-					style="display: flex; justify-content: space-between"
-				>
+					style="display: flex; justify-content: space-between">
 					<label for="exclude-replies">
 						<input
 							type="checkbox"
 							id="exclude-replies"
-							checked
-						/>Exclude replies</label
+							checked />Exclude replies</label
 					>
 					<br />
 					<label for="exclude-reposts">
 						<input
 							type="checkbox"
 							id="exclude-reposts"
-							checked
-						/>Exclude reposts</label
+							checked />Exclude reposts</label
 					>
 				</div>
 			</div>
@@ -127,8 +119,7 @@
 						class="ts-scraper"
 						name="from-date"
 						type="date"
-						placeholder="From date"
-					/>
+						placeholder="From date" />
 				</div>
 				<div>
 					<label for="to-date">Before date (exclusive): </label>
@@ -137,8 +128,7 @@
 						class="ts-scraper"
 						name="to-date"
 						type="date"
-						placeholder="To date"
-					/>
+						placeholder="To date" />
 				</div>
 			</div>
 			<div id="queryurl-div" style="display: none">
@@ -148,8 +138,7 @@
 					class="ts-scraper"
 					name="queryurl-input"
 					type="text"
-					placeholder="https://truthsocial.com/api/..."
-				/>
+					placeholder="https://truthsocial.com/api/..." />
 			</div>
 			<br />
 			<button id="search-btn" class="ts-scraper">Search</button>
@@ -157,8 +146,7 @@
 				<div
 					class="masto-spinner"
 					id="search-spinner"
-					style="display: inline-block"
-				></div>
+					style="display: inline-block"></div>
 				Searching...
 			</div>
 			<div id="no-result" style="display: none">
@@ -179,16 +167,14 @@
 					id="max-toots"
 					class="ts-scraper"
 					type="number"
-					style="display: inline-block"
-				/>
+					style="display: inline-block" />
 			</div>
 			<br />
 			<div id="extract-btn-div">
 				<button
 					id="extract-btn"
 					class="ts-scraper"
-					style="display: none"
-				>
+					style="display: none">
 					Extract
 				</button>
 				<button id="abort-btn" class="ts-scraper" style="display: none">
@@ -200,8 +186,7 @@
 			<div
 				class="masto-spinner"
 				id="extract-spinner"
-				style="display: inline-block"
-			></div>
+				style="display: inline-block"></div>
 			<div id="results-msg" style="display: inline-block">
 				Extracting...
 			</div>
@@ -229,28 +214,35 @@
 		</div>
 		<!-- Download dialog -->
 		<dialog id="dl-dialog">
-			<div class="close-btn">❌</div>
 			<div id="dl-container">
-				<span id="post-count"></span>
-				Select data to include:
+				<div class="close-btn">❌</div>
+				<span id="post-count"></span
+				><span>Select data to include:</span>
 				<div id="keys-container"></div>
-			</div>
-			<div id="options-container">
-				<div>
-					<label for="anonymize">
-						<input type="checkbox" id="anonymize" />Anonymize
-						posts</label
-					>
-				</div>
-				<div>
-					<select id="format-select" class="dl-ui">
-						<option value="xml">XML/XTZ</option>
-						<option value="txt">TXT</option>
-						<option value="csv">CSV</option>
-						<option value="xlsx">XLSX</option>
-						<option value="json">JSON</option>
-					</select>
-					<button id="dl-confirm-btn" class="dl-ui">Download</button>
+				<div id="options-container">
+					<div>
+						<label for="anonymize">
+							<input type="checkbox" id="anonymize" />Anonymize
+							posts</label
+						>
+					</div>
+					<div>
+						<select id="format-select" class="dl-ui">
+							<option value="xml">XML/XTZ (TXM)</option>
+							<option value="ske">XML (Sketch Engine)</option>
+							<option value="txt">TXT</option>
+							<option value="csv">CSV</option>
+							<option value="xlsx">XLSX</option>
+							<option value="json">JSON</option>
+						</select>
+						<button id="dl-confirm-btn" class="dl-ui">
+							Download
+						</button>
+					</div>
+					<label for="table-checkbox" style="display: none">
+						<input id="table-checkbox" type="checkbox" checked />
+						Format as table
+					</label>
 				</div>
 			</div>
 		</dialog>

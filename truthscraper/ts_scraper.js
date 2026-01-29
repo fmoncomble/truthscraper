@@ -1,107 +1,108 @@
-console.log("TruthScraper loaded");
+console.log('TruthScraper loaded');
 const checkScraperStatus = (message, sender, sendResponse) => {
-	if (message.action === "checkScraperStatus") {
-		sendResponse({ status: "active" });
+	if (message.action === 'checkScraperStatus') {
+		sendResponse({ status: 'active' });
 	}
 };
 chrome.runtime.onMessage.addListener(checkScraperStatus);
 const checkOpenDialog = (message, sender, sendResponse) => {
-	if (message.action === "checkOpenDialog") {
+	if (message.action === 'checkOpenDialog') {
 		sendResponse({
 			open:
-				document.querySelector("dialog.ts-scraper-dialog[open]") !==
+				document.querySelector('dialog.ts-scraper-dialog[open]') !==
 				null,
 		});
 	}
 };
 chrome.runtime.onMessage.addListener(checkOpenDialog);
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-	if (message.action === "start_truthscraper") {
+	console.log('Message received in TS scraper:', message);
+	if (message.action === 'start_truthscraper') {
 		sendResponse({ success: true });
 		chrome.runtime.sendMessage({
-			action: "log",
-			info: "Starting TruthScraper dialog",
+			action: 'log',
+			info: 'Starting TruthScraper dialog',
 		});
-		const dialog = document.createElement("dialog");
-		dialog.classList.add("ts-scraper-dialog");
-		const dialogHtmlUrl = chrome.runtime.getURL("ts_scraper.html");
+		const dialog = document.createElement('dialog');
+		dialog.classList.add('ts-scraper-dialog');
+		const dialogHtmlUrl = chrome.runtime.getURL('ts_scraper.html');
 		const dialogRes = await fetch(dialogHtmlUrl);
 		if (!dialogRes.ok) {
-			console.error("Failed to fetch dialog HTML");
+			console.error('Failed to fetch dialog HTML');
 			return;
 		}
 		const dialogHtml = await dialogRes.text();
 		dialog.innerHTML = dialogHtml;
 		document.body.appendChild(dialog);
 		dialog.showModal();
-		const authContainer = dialog.querySelector("#auth-container");
-		const authFold = dialog.querySelector("#auth-fold");
-		const authUnfold = dialog.querySelector("#auth-unfold");
-		const instSpan = dialog.querySelector("#instructions");
-		const instDiv = dialog.querySelector("#instructions-container");
-		const instanceContainer = dialog.querySelector("#instance-container");
-		const instanceSaveBtn = dialog.querySelector("#instance-save");
-		const allDone = dialog.querySelector("#all-done");
-		const resetAuthBtn = dialog.querySelector("#reset-auth");
-		const searchFold = dialog.querySelector("#search-fold");
-		const searchUnfold = dialog.querySelector("#search-unfold");
-		const searchContainer = dialog.querySelector("#search-container");
-		const verificationDiv = dialog.querySelector("#verification-div");
-		const searchModeSelect = dialog.querySelector("#search-mode");
-		const guidedSearchDiv = dialog.querySelector("#guided-search");
-		const allWordsInput = dialog.querySelector("#all-words");
-		const thisPhraseInput = dialog.querySelector("#this-phrase");
-		const langDiv = dialog.querySelector("#language-div");
-		const langInput = dialog.querySelector("#lang");
-		const userDiv = dialog.querySelector("#user-div");
-		const accountInput = dialog.querySelector("#account");
-		const dateDiv = dialog.querySelector("#date-div");
-		const fromDateInput = dialog.querySelector("#from-date");
-		const toDateInput = dialog.querySelector("#to-date");
-		const queryUrlDiv = dialog.querySelector("#queryurl-div");
-		const queryUrlInput = dialog.querySelector("#queryurl-input");
-		const searchBtn = dialog.querySelector("#search-btn");
-		const searchMsg = dialog.querySelector("#search-msg");
-		const noResult = dialog.querySelector("#no-result");
-		const extractContainer = dialog.querySelector("#extract-container");
-		const maxTootsDiv = dialog.querySelector("#max-toots-div");
-		const maxTootsInput = dialog.querySelector("#max-toots");
-		const extractBtnDiv = dialog.querySelector("#extract-btn-div");
-		const extractBtn = dialog.querySelector("#extract-btn");
-		const extractSpinner = dialog.querySelector("#extract-spinner");
-		const queryUrlDisplay = dialog.querySelector("#queryurl");
-		const abortBtn = dialog.querySelector("#abort-btn");
-		const resultsContainer = dialog.querySelector("#results-container");
-		const resultsMsg = dialog.querySelector("#results-msg");
-		const resetBtn = dialog.querySelector("#reset-btn");
-		const dlResult = dialog.querySelector("#dl-result");
-		const notice = dialog.querySelector("#notice");
-		const dismissBtn = dialog.querySelector("#dismiss");
-		const dlDialog = dialog.querySelector("#dl-dialog");
-		const anonymizeCheckbox = dialog.querySelector("input#anonymize");
-		const formatSelect = dialog.querySelector("#format-select");
-		const dlConfirmBtn = dialog.querySelector("#dl-confirm-btn");
+		const authContainer = dialog.querySelector('#auth-container');
+		const authFold = dialog.querySelector('#auth-fold');
+		const authUnfold = dialog.querySelector('#auth-unfold');
+		const instSpan = dialog.querySelector('#instructions');
+		const instDiv = dialog.querySelector('#instructions-container');
+		const instanceContainer = dialog.querySelector('#instance-container');
+		const instanceSaveBtn = dialog.querySelector('#instance-save');
+		const allDone = dialog.querySelector('#all-done');
+		const resetAuthBtn = dialog.querySelector('#reset-auth');
+		const searchFold = dialog.querySelector('#search-fold');
+		const searchUnfold = dialog.querySelector('#search-unfold');
+		const searchContainer = dialog.querySelector('#search-container');
+		const verificationDiv = dialog.querySelector('#verification-div');
+		const searchModeSelect = dialog.querySelector('#search-mode');
+		const guidedSearchDiv = dialog.querySelector('#guided-search');
+		const allWordsInput = dialog.querySelector('#all-words');
+		const thisPhraseInput = dialog.querySelector('#this-phrase');
+		const langDiv = dialog.querySelector('#language-div');
+		const langInput = dialog.querySelector('#lang');
+		const userDiv = dialog.querySelector('#user-div');
+		const accountInput = dialog.querySelector('#account');
+		const dateDiv = dialog.querySelector('#date-div');
+		const fromDateInput = dialog.querySelector('#from-date');
+		const toDateInput = dialog.querySelector('#to-date');
+		const queryUrlDiv = dialog.querySelector('#queryurl-div');
+		const queryUrlInput = dialog.querySelector('#queryurl-input');
+		const searchBtn = dialog.querySelector('#search-btn');
+		const searchMsg = dialog.querySelector('#search-msg');
+		const noResult = dialog.querySelector('#no-result');
+		const extractContainer = dialog.querySelector('#extract-container');
+		const maxTootsDiv = dialog.querySelector('#max-toots-div');
+		const maxTootsInput = dialog.querySelector('#max-toots');
+		const extractBtnDiv = dialog.querySelector('#extract-btn-div');
+		const extractBtn = dialog.querySelector('#extract-btn');
+		const extractSpinner = dialog.querySelector('#extract-spinner');
+		const queryUrlDisplay = dialog.querySelector('#queryurl');
+		const abortBtn = dialog.querySelector('#abort-btn');
+		const resultsContainer = dialog.querySelector('#results-container');
+		const resultsMsg = dialog.querySelector('#results-msg');
+		const resetBtn = dialog.querySelector('#reset-btn');
+		const dlResult = dialog.querySelector('#dl-result');
+		const notice = dialog.querySelector('#notice');
+		const dismissBtn = dialog.querySelector('#dismiss');
+		const dlDialog = dialog.querySelector('#dl-dialog');
+		const anonymizeCheckbox = dialog.querySelector('input#anonymize');
+		const formatSelect = dialog.querySelector('#format-select');
+		const dlConfirmBtn = dialog.querySelector('#dl-confirm-btn');
 
-		const closeBtn = dialog.querySelector(".close-btn");
-		closeBtn.addEventListener("click", () => {
+		const closeBtn = dialog.querySelector('.close-btn');
+		closeBtn.addEventListener('click', () => {
 			dialog.close();
 			dialog.remove();
 		});
 
 		const version = chrome.runtime.getManifest().version;
-		dialog.querySelector("#version-div").textContent = "v" + version;
+		dialog.querySelector('#version-div').textContent = 'v' + version;
 
-		const logoUrl = chrome.runtime.getURL("icons/truth-logo.svg");
-		dialog.querySelector(".ts-logo img").src = logoUrl;
+		const logoUrl = chrome.runtime.getURL('icons/truth-logo.svg');
+		dialog.querySelector('.ts-logo img').src = logoUrl;
 
 		// Declare credentials
-		let tsInstance = "truthsocial.com";
+		let tsInstance = 'truthsocial.com';
 		let clientId;
 		let clientSecret;
-		chrome.storage.local.get(["tsclientid"], (result) => {
+		chrome.storage.local.get(['tsclientid'], (result) => {
 			clientId = result.tsclientid;
 		});
-		chrome.storage.local.get(["tsclientsecret"], (result) => {
+		chrome.storage.local.get(['tsclientsecret'], (result) => {
 			clientSecret = result.tsclientsecret;
 		});
 
@@ -110,147 +111,78 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		let userToken;
 
 		//Functions to handle user token
-		getUserToken(function (userTokenResult) {
-			userToken = userTokenResult;
+		getUserToken(async function (userTokenResult) {
+			console.log('Stored token = ', userTokenResult);
+			await new Promise((resolve) => {
+				chrome.runtime.sendMessage(
+					{ action: 'sendToken' },
+					async (response) => {
+						if (response && response.success) {
+							console.log('Token from TS = ', response.token);
+							userToken = response.token;
+							resolve();
+						} else {
+							console.log('No token from TS');
+							userToken = null;
+							window.alert(
+								'You need to be logged into your Truth Social account.',
+							);
+							resolve();
+						}
+					},
+				);
+			});
+			console.log('Final user token = ', userToken);
 
 			if (userToken) {
-				instSpan.style.display = "none";
-				instDiv.style.display = "none";
-				instanceContainer.style.display = "none";
-				allDone.style.display = "block";
-				searchFold.style.display = "block";
-				searchUnfold.style.display = "none";
-				verificationDiv.style.display = "block";
-				verifyApp(userToken);
+				instSpan.style.display = 'none';
+				instDiv.style.display = 'none';
+				instanceContainer.style.display = 'none';
+				allDone.style.display = 'block';
+				searchFold.style.display = 'block';
+				searchUnfold.style.display = 'none';
+				verificationDiv.style.display = 'block';
+				verificationDiv.style.display = 'none';
+				searchContainer.style.display = 'block';
+				allWordsInput.focus();
 			} else {
-				authContainer.style.display = "block";
-				authFold.style.display = "block";
-				authUnfold.style.display = "none";
-				searchContainer.style.display = "none";
-				searchFold.style.display = "none";
-				searchUnfold.style.display = "block";
+				authContainer.style.display = 'block';
+				authFold.style.display = 'block';
+				authUnfold.style.display = 'none';
+				searchContainer.style.display = 'none';
+				searchFold.style.display = 'none';
+				searchUnfold.style.display = 'block';
 			}
 		});
 
 		function getUserToken(callback) {
-			chrome.storage.local.get(["tsusertoken"], function (result) {
-				const tsusertoken = result.tsusertoken || "";
+			chrome.storage.local.get(['tsusertoken'], function (result) {
+				const tsusertoken = result.tsusertoken || '';
 				callback(tsusertoken);
 			});
 		}
 
-		async function verifyApp(token) {
-			const url =
-				"https://" + tsInstance + "/api/v1/apps/verify_credentials";
-			const headers = {
-				Authorization: "Bearer " + token,
-			};
-			const response = await fetch(url, { headers });
-			if (response.status === 403) {
-				if (
-					window.confirm(
-						"You have been temporarily blocked: click OK to reset your access and try again"
-					)
-				) {
-					chrome.runtime.sendMessage(
-						{
-							action: "resetAccess",
-							url: "https://truthsocial.com/api/v1/trends",
-						},
-						(response) => {
-							if (response && response.success) {
-								const accessResetListener = (
-									message,
-									sender,
-									sendResponse
-								) => {
-									if (message.action === "accessResetDone") {
-										chrome.runtime.onMessage.removeListener(
-											accessResetListener
-										);
-										verifyApp(token);
-									}
-								};
-								chrome.runtime.onMessage.addListener(
-									accessResetListener
-								);
-							}
-						}
-					);
-				}
-			} else if (!response.ok) {
-				if (response.status === 429) {
-					window.alert(
-						"You are being rate limited. Please wait and try again later."
-					);
-				} else {
-					window.alert(
-						"There was an error while verifying your authorization. Please reset your authentication."
-					);
-					authContainer.style.display = "block";
-					authFold.style.display = "block";
-					authUnfold.style.display = "none";
-					searchContainer.style.display = "none";
-					searchFold.style.display = "none";
-					searchUnfold.style.display = "block";
-				}
-			} else {
-				verificationDiv.textContent = `Application verified successfully ✅`;
-				setTimeout(() => {
-					verificationDiv.style.display = "none";
-					searchContainer.style.display = "block";
-					allWordsInput.focus();
-				}, 1000);
-			}
-		}
-
 		async function saveUserToken() {
 			chrome.storage.local.set({ tsusertoken: userToken }, function () {
-				allDone.style.display = "block";
-				instSpan.style.display = "none";
-				instDiv.style.display = "none";
-				instanceContainer.style.display = "none";
+				allDone.style.display = 'block';
+				instSpan.style.display = 'none';
+				instDiv.style.display = 'none';
+				instanceContainer.style.display = 'none';
 				setTimeout(() => {
-					authContainer.style.display = "none";
-					authFold.style.display = "none";
-					authUnfold.style.display = "block";
-					searchContainer.style.display = "block";
-					searchFold.style.display = "block";
-					searchUnfold.style.display = "none";
+					authContainer.style.display = 'none';
+					authFold.style.display = 'none';
+					authUnfold.style.display = 'block';
+					searchContainer.style.display = 'block';
+					searchFold.style.display = 'block';
+					searchUnfold.style.display = 'none';
 				}, 1000);
 			});
 		}
 
 		async function removeUserToken() {
-			const formData = new FormData();
-			formData.append("client_id", clientId);
-			formData.append("client_secret", clientSecret);
-			formData.append("token", userToken);
-
-			const url = "https://" + tsInstance + "/oauth/revoke";
-
-			try {
-				const response = await fetch(url, {
-					method: "POST",
-					body: formData,
-				});
-				if (!response.ok) {
-					window.alert(
-						"Could not revoke authorization: server responded with error " +
-							response.status
-					);
-					throw new Error(
-						"Could not revoke token: ",
-						response.status
-					);
-				} else {
-					window.alert("Authorization successfully revoked");
-				}
-			} catch (error) {
-				console.error("Error: ", error);
-			}
-			chrome.storage.local.remove("tsusertoken", function () {
+			chrome.storage.local.remove(['tsusertoken'], async () => {
 				userToken = null;
+				return true;
 			});
 		}
 
@@ -258,232 +190,135 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		getUnderstand(function (understandResult) {
 			understand = understandResult;
 			if (userToken && understand) {
-				notice.style.display = "none";
+				notice.style.display = 'none';
 			} else {
-				notice.style.display = "block";
+				notice.style.display = 'block';
 			}
 		});
 
 		function getUnderstand(callback) {
-			chrome.storage.local.get(["understand"], function (result) {
-				const understand = result.understand || "";
+			chrome.storage.local.get(['understand'], function (result) {
+				const understand = result.understand || '';
 				callback(understand);
 			});
 		}
 
 		async function saveUnderstand() {
-			chrome.storage.local.set({ understand: "understand" }, function () {
-				notice.style.display = "none";
+			chrome.storage.local.set({ understand: 'understand' }, function () {
+				notice.style.display = 'none';
 			});
 		}
 
 		async function removeUnderstand() {
-			chrome.storage.local.remove("understand", function () {
-				notice.style.display = "block";
+			chrome.storage.local.remove('understand', function () {
+				notice.style.display = 'block';
 			});
 		}
 
-		dismissBtn.addEventListener("click", () => {
+		dismissBtn.addEventListener('click', () => {
 			saveUnderstand();
 		});
 
+		function checkForbidden() {
+			chrome.runtime.sendMessage(
+				{ action: 'checkForbidden' },
+				(response) => {
+					if (response && response.forbidden) {
+						window.alert(
+							'You have been temporarily blocked. You will be redirected to regain access.',
+						);
+						chrome.runtime.sendMessage(
+							{ action: 'resetAccess' },
+							(response) => {
+								if (response && response.success) {
+									window.reload();
+								}
+							},
+						);
+					}
+				},
+			);
+		}
+
+		checkForbidden();
+
 		// Assign role to Authentication header
-		authFold.addEventListener("click", () => {
-			if (authContainer.style.display === "block") {
-				authContainer.style.display = "none";
-				authFold.style.display = "none";
-				authUnfold.style.display = "block";
+		authFold.addEventListener('click', () => {
+			if (authContainer.style.display === 'block') {
+				authContainer.style.display = 'none';
+				authFold.style.display = 'none';
+				authUnfold.style.display = 'block';
 			}
 		});
 
-		authUnfold.addEventListener("click", () => {
-			if (authContainer.style.display === "none") {
-				authContainer.style.display = "block";
-				authFold.style.display = "block";
-				authUnfold.style.display = "none";
+		authUnfold.addEventListener('click', () => {
+			if (authContainer.style.display === 'none') {
+				authContainer.style.display = 'block';
+				authFold.style.display = 'block';
+				authUnfold.style.display = 'none';
 			}
 		});
 
 		// Assign role to Instructions header
-		instSpan.addEventListener("click", () => {
-			if (instDiv.style.display === "none") {
-				instDiv.style.display = "block";
-				instSpan.textContent = "Hide instructions";
-			} else if (instDiv.style.display === "block") {
-				instDiv.style.display = "none";
-				instSpan.textContent = "Show instructions";
+		instSpan.addEventListener('click', () => {
+			if (instDiv.style.display === 'none') {
+				instDiv.style.display = 'block';
+				instSpan.textContent = 'Hide instructions';
+			} else if (instDiv.style.display === 'block') {
+				instDiv.style.display = 'none';
+				instSpan.textContent = 'Show instructions';
 			}
 		});
 
 		// Assign role to 'Build search query' header
-		searchFold.addEventListener("click", () => {
-			searchContainer.style.display = "none";
-			searchFold.style.display = "none";
-			searchUnfold.style.display = "block";
+		searchFold.addEventListener('click', () => {
+			searchContainer.style.display = 'none';
+			searchFold.style.display = 'none';
+			searchUnfold.style.display = 'block';
 		});
 
-		searchUnfold.addEventListener("click", () => {
-			searchContainer.style.display = "block";
-			searchFold.style.display = "block";
-			searchUnfold.style.display = "none";
+		searchUnfold.addEventListener('click', () => {
+			searchContainer.style.display = 'block';
+			searchFold.style.display = 'block';
+			searchUnfold.style.display = 'none';
 		});
 
-		instanceSaveBtn.addEventListener("click", () => {
-			authenticate();
-		});
-
-		// Oauth flow function
-		async function authenticate() {
-			const authSpinner = document.createElement("div");
-			authSpinner.classList.add("masto-spinner");
-			instanceSaveBtn.textContent = "";
-			instanceSaveBtn.appendChild(authSpinner);
-			let instance = tsInstance;
-			let redirectUri;
-			await new Promise((resolve) => {
-				chrome.runtime.sendMessage(
-					{ action: "getRedirectUri" },
-					(response) => {
-						if (response && response.redirectUri) {
-							redirectUri = response.redirectUri;
-							resolve();
-						} else {
-							console.error("Could not get redirect URI");
-							window.alert("Could not get redirect URI");
-							return;
-						}
-					}
-				);
-			});
-			let createAppUrl = `https://${instance}/api/v1/apps`;
-			let response = await fetch(createAppUrl, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					client_name: "TruthScraper",
-					redirect_uris: redirectUri,
-					scopes: "read",
-					website: redirectUri,
-				}),
-			});
-			if (!response.ok) {
-				if (response.status === 403) {
-					if (
-						window.confirm(
-							"You have been temporarily blocked: click OK to reset your access and try again"
-						)
-					) {
-						chrome.runtime.sendMessage(
-							{
-								action: "resetAccess",
-								url: "https://truthsocial.com/api/v1/trends",
-							},
-							(response) => {
-								if (response && response.success) {
-									const accessResetListener = (
-										message,
-										sender,
-										sendResponse
-									) => {
-										if (
-											message.action === "accessResetDone"
-										) {
-											chrome.runtime.onMessage.removeListener(
-												accessResetListener
-											);
-											authenticate();
-										}
-									};
-									chrome.runtime.onMessage.addListener(
-										accessResetListener
-									);
-								}
-							}
-						);
-					}
+		instanceSaveBtn.addEventListener('click', () => {
+			// authenticate();
+			chrome.runtime.sendMessage({ action: 'sendToken' }, (response) => {
+				if (response && response.success) {
+					userToken = response.token;
+					saveUserToken();
+				} else {
+					window.alert(
+						'You need to be logged into your Truth Social account.',
+					);
 				}
-				let errorData = await response.json();
-				console.error(
-					"Error creating app: ",
-					response.status,
-					errorData
-				);
-				return;
-			} else if (response && response.ok) {
-				let data = await response.json();
-				clientId = data.client_id;
-				chrome.storage.local.set({ tsclientid: clientId });
-				clientSecret = data.client_secret;
-				chrome.storage.local.set({
-					tsclientsecret: clientSecret,
-				});
-			}
-			chrome.runtime.sendMessage(
-				{
-					action: "startAuth",
-					clientId: clientId,
-					clientSecret: clientSecret,
-					instance: instance,
-				},
-				async (response) => {
-					if (!response) {
-						console.error("No response from background for auth");
-						return;
-					}
-					if (response.success) {
-						const code = response.code;
-						const tokenResp = await fetch(
-							`https://${instance}/oauth/token`,
-							{
-								method: "POST",
-								headers: {
-									"Content-Type":
-										"application/x-www-form-urlencoded",
-								},
-								body: new URLSearchParams({
-									client_id: clientId,
-									client_secret: clientSecret,
-									grant_type: "authorization_code",
-									code: code,
-									redirect_uri: redirectUri,
-								}),
-							}
-						);
-						const tokenData = await tokenResp.json();
-						userToken = tokenData.access_token;
-						saveUserToken();
-					} else {
-						window.alert("Authentication failed");
-						console.error("Auth failed", response);
-					}
-					authSpinner.remove();
-					instanceSaveBtn.textContent = "Authorize";
-				}
-			);
-		}
+			});
+		});
 
 		// Reset authentication button
-		resetAuthBtn.addEventListener("click", async () => {
-			await removeUserToken();
-			removeUnderstand();
-			instanceContainer.style.display = "block";
-			allDone.style.display = "none";
-			searchContainer.style.display = "none";
-			location.reload();
+		resetAuthBtn.addEventListener('click', async () => {
+			let reset = await removeUserToken();
+			if (reset) {
+				removeUnderstand();
+				instanceContainer.style.display = 'block';
+				allDone.style.display = 'none';
+				searchContainer.style.display = 'none';
+				location.reload();
+			}
 		});
 
 		// Logic to build query URL from inputs
 		let queryUrl;
 		let lang;
-		accountInput.addEventListener("change", () => {
-			accountInput.removeAttribute("style");
+		accountInput.addEventListener('change', () => {
+			accountInput.removeAttribute('style');
 		});
 
 		let fromDate;
 		let min_id;
-		fromDateInput.addEventListener("change", () => {
+		fromDateInput.addEventListener('change', () => {
 			fromDate = new Date(fromDateInput.value);
 			const fromDateStamp = BigInt(fromDate.getTime() / 1000);
 			min_id = (fromDateStamp << 16n) * 1000n;
@@ -491,36 +326,36 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
 		let toDate;
 		let max_id;
-		toDateInput.addEventListener("change", () => {
+		toDateInput.addEventListener('change', () => {
 			toDate = new Date(toDateInput.value);
 			const toDateStamp = BigInt(toDate.getTime() / 1000);
 			max_id = (toDateStamp << 16n) * 1000n;
 		});
 
-		let searchMode = "guided";
+		let searchMode = 'guided';
 
-		searchModeSelect.addEventListener("change", () => {
+		searchModeSelect.addEventListener('change', () => {
 			searchMode = searchModeSelect.value;
-			if (searchMode === "guided") {
-				guidedSearchDiv.style.display = "block";
-				langDiv.style.display = "block";
-				userDiv.style.display = "none";
-				dateDiv.style.display = "block";
-				queryUrlDiv.style.display = "none";
+			if (searchMode === 'guided') {
+				guidedSearchDiv.style.display = 'block';
+				langDiv.style.display = 'block';
+				userDiv.style.display = 'none';
+				dateDiv.style.display = 'block';
+				queryUrlDiv.style.display = 'none';
 				allWordsInput.focus();
-			} else if (searchMode === "user") {
-				guidedSearchDiv.style.display = "none";
-				langDiv.style.display = "none";
-				userDiv.style.display = "block";
-				dateDiv.style.display = "block";
-				queryUrlDiv.style.display = "none";
+			} else if (searchMode === 'user') {
+				guidedSearchDiv.style.display = 'none';
+				langDiv.style.display = 'none';
+				userDiv.style.display = 'block';
+				dateDiv.style.display = 'block';
+				queryUrlDiv.style.display = 'none';
 				accountInput.focus();
-			} else if (searchMode === "url") {
-				guidedSearchDiv.style.display = "none";
-				langDiv.style.display = "none";
-				userDiv.style.display = "none";
-				dateDiv.style.display = "none";
-				queryUrlDiv.style.display = "block";
+			} else if (searchMode === 'url') {
+				guidedSearchDiv.style.display = 'none';
+				langDiv.style.display = 'none';
+				userDiv.style.display = 'none';
+				dateDiv.style.display = 'none';
+				queryUrlDiv.style.display = 'block';
 				queryUrlInput.focus();
 			}
 		});
@@ -528,33 +363,33 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		let queryAttempt = 0;
 		async function buildQueryUrl() {
 			queryAttempt += 1;
-			queryUrl = "https://" + tsInstance + "/api/v2/search?";
+			queryUrl = 'https://' + tsInstance + '/api/v2/search?';
 
 			// Concatenate query URL from search elements
-			let allWords = allWordsInput.value.replaceAll(" ", " AND ");
+			let allWords = allWordsInput.value.replaceAll(' ', ' AND ');
 			let thisPhrase = thisPhraseInput.value;
 			lang = langInput.value;
-			let account = accountInput.value.replaceAll(" ", " AND ");
+			let account = accountInput.value.replaceAll(' ', ' AND ');
 			if (fromDate) {
 			}
 			if (allWords || thisPhrase) {
-				queryUrl = queryUrl + "q=";
+				queryUrl = queryUrl + 'q=';
 			}
 			if (allWords) {
 				queryUrl = queryUrl + `${allWords}`;
 			}
 			if (thisPhrase) {
 				if (allWords) {
-					queryUrl = queryUrl + " AND ";
+					queryUrl = queryUrl + ' AND ';
 				}
 				queryUrl = queryUrl + '"' + thisPhrase + '"';
 			}
-			if (searchMode === "user" && account) {
+			if (searchMode === 'user' && account) {
 				try {
 					getIdUrl =
-						"https://" +
+						'https://' +
 						tsInstance +
-						"/api/v1/accounts/lookup?acct=" +
+						'/api/v1/accounts/lookup?acct=' +
 						account;
 					const idResponse = await fetch(getIdUrl);
 					if (idResponse.ok) {
@@ -564,12 +399,12 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 						if (idResponse.status === 403) {
 							if (
 								window.confirm(
-									"You have been temporarily blocked: click OK to reset your access and try again"
+									'You have been temporarily blocked: click OK to reset your access and try again',
 								)
 							) {
 								chrome.runtime.sendMessage(
 									{
-										action: "resetAccess",
+										action: 'resetAccess',
 										url: queryUrl,
 									},
 									(response) => {
@@ -577,126 +412,126 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 											const accessResetListener2 = (
 												message,
 												sender,
-												sendResponse
+												sendResponse,
 											) => {
 												if (
 													message.action ===
-													"accessResetDone"
+													'accessResetDone'
 												) {
 													chrome.runtime.onMessage.removeListener(
-														accessResetListener2
+														accessResetListener2,
 													);
 													buildQueryUrl();
 													return;
 												}
 											};
 											chrome.runtime.onMessage.addListener(
-												accessResetListener2
+												accessResetListener2,
 											);
 										} else {
 											console.error(
-												"Failed to reset access"
+												'Failed to reset access',
 											);
 											return;
 										}
-									}
+									},
 								);
 							}
 						}
-						window.alert("Account not found");
-						searchMsg.style.display = "none";
-						accountInput.style.outline = "solid 2px #e60000";
-						accountInput.style.border = "solid 1px #e60000";
+						window.alert('Account not found');
+						searchMsg.style.display = 'none';
+						accountInput.style.outline = 'solid 2px #e60000';
+						accountInput.style.border = 'solid 1px #e60000';
 						accountInput.focus();
 						return;
 					}
 					if (allWords || anyWords || thisPhrase) {
-						queryUrl = queryUrl + "&";
+						queryUrl = queryUrl + '&';
 					}
-					queryUrl = queryUrl + "account_id=" + account;
+					queryUrl = queryUrl + 'account_id=' + account;
 				} catch (error) {
 					console.error(error);
 				}
 			}
-			if (searchMode === "user") {
+			if (searchMode === 'user') {
 				const excludeReplies =
-					dialog.querySelector("#exclude-replies").checked;
+					dialog.querySelector('#exclude-replies').checked;
 				const excludeReposts =
-					dialog.querySelector("#exclude-reposts").checked;
+					dialog.querySelector('#exclude-reposts').checked;
 				queryUrl = `https://truthsocial.com/api/v1/accounts/${account}/statuses?exclude_replies=${excludeReplies}&exclude_reposts=${excludeReposts}&limit=20`;
-			} else if (searchMode === "guided" || searchMode === "expert") {
-				queryUrl = queryUrl + "&type=statuses&resolve=true&limit=20";
+			} else if (searchMode === 'guided' || searchMode === 'expert') {
+				queryUrl = queryUrl + '&type=statuses&resolve=true&limit=20';
 			}
-			if (searchMode !== "url") {
+			if (searchMode !== 'url') {
 				if (fromDate) {
-					if (searchMode === "user") {
-						queryUrl += "&since_id=" + min_id;
-					} else if (searchMode !== "user") {
+					if (searchMode === 'user') {
+						queryUrl += '&since_id=' + min_id;
+					} else if (searchMode !== 'user') {
 						if (allWords || thisPhrase) {
-							queryUrl = queryUrl + "&";
+							queryUrl = queryUrl + '&';
 						}
-						queryUrl = queryUrl + "min_id=" + min_id;
+						queryUrl = queryUrl + 'min_id=' + min_id;
 					}
 				}
 				if (toDate) {
-					if (searchMode === "user" || allWords || thisPhrase) {
-						queryUrl = queryUrl + "&";
+					if (searchMode === 'user' || allWords || thisPhrase) {
+						queryUrl = queryUrl + '&';
 					}
-					queryUrl = queryUrl + "max_id=" + max_id;
+					queryUrl = queryUrl + 'max_id=' + max_id;
 				}
 			}
-			if (searchMode === "url" && queryUrlInput.value) {
+			if (searchMode === 'url' && queryUrlInput.value) {
 				queryUrl = queryUrlInput.value;
 			}
 			queryUrl = encodeURI(queryUrl);
-			const queryLink = document.createElement("a");
-			queryLink.setAttribute("href", queryUrl);
-			queryLink.setAttribute("target", "_blank");
+			const queryLink = document.createElement('a');
+			queryLink.setAttribute('href', queryUrl);
+			queryLink.setAttribute('target', '_blank');
 			queryLink.textContent = queryUrl;
-			queryLink.style.fontWeight = "normal";
-			queryUrlDisplay.textContent = "Query URL: ";
+			queryLink.style.fontWeight = 'normal';
+			queryUrlDisplay.textContent = 'Query URL: ';
 			queryUrlDisplay.appendChild(queryLink);
 
 			// Fetch query response from server
 			try {
 				if (
-					searchMode !== "user" &&
+					searchMode !== 'user' &&
 					!allWords &&
 					!thisPhrase &&
 					!queryUrlInput.value
 				) {
-					window.alert("Please provide keywords or a query URL");
-					searchMsg.style.display = "none";
+					window.alert('Please provide keywords or a query URL');
+					searchMsg.style.display = 'none';
 					return;
-				} else if (searchMode === "user" && !account) {
-					window.alert("Please provide a username");
+				} else if (searchMode === 'user' && !account) {
+					window.alert('Please provide a username');
 					accountInput.focus();
 					return;
 				}
 				const response = await fetch(queryUrl, {
 					headers: {
 						Authorization: `Bearer ${userToken}`,
-						scope: "read",
+						scope: 'read',
 					},
 				});
 				if (response.status === 401) {
-					searchMsg.style.display = "none";
+					searchMsg.style.display = 'none';
 					window.alert(
-						"Application not authorized: please authenticate with Truth Social"
+						'Application not authorized: please authenticate with Truth Social',
 					);
-					authContainer.style.display = "block";
-					authFold.style.display = "block";
-					authUnfold.style.display = "none";
-					throw new Error("User needs to authorize app");
+					authContainer.style.display = 'block';
+					authFold.style.display = 'block';
+					authUnfold.style.display = 'none';
+					throw new Error('User needs to authorize app');
 				} else if (response.status === 403) {
 					if (
 						window.confirm(
-							`You have been temporarily blocked (query attempt ${queryAttempt}): click OK to reset your access and try again`
+							`You have been temporarily blocked (query attempt ${queryAttempt}): click OK to reset your access and try again`,
 						)
 					) {
 						chrome.runtime.sendMessage(
 							{
-								action: "resetAccess",
+								action: 'resetAccess',
 								url: queryUrl,
 							},
 							(response) => {
@@ -704,44 +539,44 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 									const accessResetListener3 = (
 										message,
 										sender,
-										sendResponse
+										sendResponse,
 									) => {
 										if (
-											message.action === "accessResetDone"
+											message.action === 'accessResetDone'
 										) {
 											chrome.runtime.onMessage.removeListener(
-												accessResetListener3
+												accessResetListener3,
 											);
 											buildQueryUrl();
 											return;
 										}
 									};
 									chrome.runtime.onMessage.addListener(
-										accessResetListener3
+										accessResetListener3,
 									);
 								} else {
-									console.error("Failed to reset access");
+									console.error('Failed to reset access');
 									return;
 								}
-							}
+							},
 						);
 					}
 				} else if (response.status === 429) {
 					const rateLimitListener = (
 						message,
 						sender,
-						sendResponse
+						sendResponse,
 					) => {
-						if (message.action === "rateLimitHit") {
+						if (message.action === 'rateLimitHit') {
 							chrome.runtime.onMessage.removeListener(
-								rateLimitListener
+								rateLimitListener,
 							);
 							let retryAfter = Number(message.retryAfter);
 							if (retryAfter === 0) {
 								window.alert(
-									"You have been blocked: try again later."
+									'You have been blocked: try again later.',
 								);
-								searchMsg.textContent = "";
+								searchMsg.textContent = '';
 								return;
 							} else {
 								searchMsg.textContent = `Waiting for rate limit to lift... ${retryAfter} seconds remaining`;
@@ -765,25 +600,25 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					chrome.runtime.onMessage.addListener(rateLimitListener);
 				} else if (!response || !response.ok) {
 					window.alert(
-						`Error fetching query URL: status ${response.status}`
+						`Error fetching query URL: status ${response.status}`,
 					);
-					searchMsg.style.display = "none";
-					throw new Error("Could not fetch search results.");
+					searchMsg.style.display = 'none';
+					throw new Error('Could not fetch search results.');
 				} else {
 					const searchData = await response.json();
 					let searchResults = searchData.statuses
 						? searchData.statuses
 						: searchData;
 					if (searchResults.length == 0) {
-						searchMsg.style.display = "none";
-						noResult.style.display = "block";
+						searchMsg.style.display = 'none';
+						noResult.style.display = 'block';
 					} else {
-						searchMsg.style.display = "none";
-						searchContainer.style.display = "none";
-						searchFold.style.display = "none";
-						searchUnfold.style.display = "block";
-						extractContainer.style.display = "block";
-						extractBtn.style.display = "block";
+						searchMsg.style.display = 'none';
+						searchContainer.style.display = 'none';
+						searchFold.style.display = 'none';
+						searchUnfold.style.display = 'block';
+						extractContainer.style.display = 'block';
+						extractBtn.style.display = 'block';
 					}
 				}
 			} catch (error) {
@@ -792,18 +627,18 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		}
 
 		// Assign role to search button
-		searchBtn.addEventListener("click", () => {
-			extractContainer.style.display = "none";
-			resultsContainer.style.display = "none";
-			maxTootsDiv.style.display = "block";
-			searchMsg.style.display = "block";
-			noResult.style.display = "none";
+		searchBtn.addEventListener('click', () => {
+			extractContainer.style.display = 'none';
+			resultsContainer.style.display = 'none';
+			maxTootsDiv.style.display = 'block';
+			searchMsg.style.display = 'block';
+			noResult.style.display = 'none';
 			buildQueryUrl();
 		});
 
 		// Declare extraction variables
 		let maxToots;
-		maxTootsInput.addEventListener("change", () => {
+		maxTootsInput.addEventListener('change', () => {
 			maxToots = maxTootsInput.value;
 			if (!maxToots) {
 				maxToots = Infinity;
@@ -817,7 +652,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		let nextQueryUrl;
 
 		// Assign function to extract button
-		extractBtn.addEventListener("click", () => {
+		extractBtn.addEventListener('click', () => {
 			if (statuses.length || posts.length) {
 				showOptions(statuses);
 				return;
@@ -826,32 +661,32 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		});
 
 		async function triggerScrape() {
-			maxTootsDiv.style.display = "none";
+			maxTootsDiv.style.display = 'none';
 			maxTootsInput.disabled = true;
-			abortBtn.style.display = "block";
-			extractBtn.style.display = "none";
-			resultsContainer.style.display = "block";
-			resultsMsg.textContent = "";
-			dlResult.textContent = "";
-			resetBtn.style.display = "none";
+			abortBtn.style.display = 'block';
+			extractBtn.style.display = 'none';
+			resultsContainer.style.display = 'block';
+			resultsMsg.textContent = '';
+			dlResult.textContent = '';
+			resetBtn.style.display = 'none';
 			try {
 				await scrape();
-				abortBtn.style.display = "none";
-				extractBtn.style.display = "block";
+				abortBtn.style.display = 'none';
+				extractBtn.style.display = 'block';
 				maxTootsInput.disabled = false;
 				extractBtn.disabled = false;
-				extractSpinner.style.display = "none";
-				resultsMsg.textContent = statuses.length + " post(s) extracted";
+				extractSpinner.style.display = 'none';
+				resultsMsg.textContent = statuses.length + ' post(s) extracted';
 				showOptions(statuses);
-				resetBtn.style.display = "inline-block";
+				resetBtn.style.display = 'inline-block';
 			} catch (error) {
-				console.error("Error: ", error);
+				console.error('Error: ', error);
 			}
 		}
 
 		// Assign function to abort button
-		abortBtn.addEventListener("click", () => {
-			abortBtn.textContent = "Aborting...";
+		abortBtn.addEventListener('click', () => {
+			abortBtn.textContent = 'Aborting...';
 			abort = true;
 		});
 		// Function to scrape toots
@@ -860,8 +695,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		async function scrape() {
 			let tootSet = new Set();
 			abort = false;
-			extractBtn.style.display = "none";
-			abortBtn.style.display = "block";
+			extractBtn.style.display = 'none';
+			abortBtn.style.display = 'block';
 			if (!maxToots) {
 				maxToots = Infinity;
 			}
@@ -877,9 +712,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					break;
 				}
 				if (statuses.length >= maxToots || abort) {
-					abortBtn.textContent = "Abort";
-					abortBtn.style.display = "none";
-					extractBtn.style.display = "block";
+					abortBtn.textContent = 'Abort';
+					abortBtn.style.display = 'none';
+					extractBtn.style.display = 'block';
 					extractBtn.disabled = true;
 					abort = false;
 					break;
@@ -897,17 +732,17 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					} else if (p > 1) {
 						nextQueryUrl = new URL(queryUrl);
 						if (
-							searchMode === "user" ||
-							nextQueryUrl.pathname.includes("/api/v1/accounts/")
+							searchMode === 'user' ||
+							nextQueryUrl.pathname.includes('/api/v1/accounts/')
 						) {
 							nextQueryUrl.searchParams.set(
-								"max_id",
-								id.toString()
+								'max_id',
+								id.toString(),
 							);
 						} else {
 							nextQueryUrl.searchParams.set(
-								"offset",
-								offset.toString()
+								'offset',
+								offset.toString(),
 							);
 						}
 						nextQueryUrl = nextQueryUrl.toString();
@@ -918,27 +753,27 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 						const response = await fetch(nextQueryUrl, {
 							headers: {
 								Authorization: `Bearer ${userToken}`,
-								scope: "read",
+								scope: 'read',
 							},
 						});
 						if (response.status === 401) {
 							window.alert(
-								"Application not authorized: please authenticate with Truth Social"
+								'Application not authorized: please authenticate with Truth Social',
 							);
 							abort = true;
 							throw new Error(
-								"Could not fetch: not authenticated"
+								'Could not fetch: not authenticated',
 							);
 						} else if (response.status === 403) {
 							if (
 								window.confirm(
-									"You have been temporarily blocked: click OK to reset your access and try again"
+									'You have been temporarily blocked: click OK to reset your access and try again',
 								)
 							) {
 								const ok = await new Promise((resolve) => {
 									chrome.runtime.sendMessage(
 										{
-											action: "resetAccess",
+											action: 'resetAccess',
 											url: nextQueryUrl,
 										},
 										(response) => {
@@ -946,28 +781,28 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 												const accessResetListener4 = (
 													message,
 													sender,
-													sendResponse
+													sendResponse,
 												) => {
 													if (
 														message.action ===
-														"accessResetDone"
+														'accessResetDone'
 													) {
 														chrome.runtime.onMessage.removeListener(
-															accessResetListener4
+															accessResetListener4,
 														);
 														resolve(true);
 													}
 												};
 												chrome.runtime.onMessage.addListener(
-													accessResetListener4
+													accessResetListener4,
 												);
 											} else {
 												console.error(
-													"Failed to reset access"
+													'Failed to reset access',
 												);
 												resolve(false);
 											}
-										}
+										},
 									);
 								});
 								if (!ok) {
@@ -981,10 +816,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 								const listener = (message) => {
 									if (
 										message &&
-										message.action === "rateLimitHit"
+										message.action === 'rateLimitHit'
 									) {
 										chrome.runtime.onMessage.removeListener(
-											listener
+											listener,
 										);
 										resolve(Number(message.retryAfter));
 									}
@@ -993,35 +828,35 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 							});
 							if (!retryAfter || Number(retryAfter) === 0) {
 								window.alert(
-									"You have been temporarily blocked: download the data, copy the query URL and paste it into the relevant field to resume later."
+									'You have been temporarily blocked: download the data, copy the query URL and paste it into the relevant field to resume later.',
 								);
-								resultsMsg.textContent = "";
+								resultsMsg.textContent = '';
 								queryUrlDisplay.textContent =
-									"Click here to copy query URL";
-								queryUrlDisplay.style.cursor = "pointer";
+									'Click here to copy query URL';
+								queryUrlDisplay.style.cursor = 'pointer';
 								queryUrlDisplay.style.textDecoration =
-									"underline";
-								queryUrlDisplay.style.fontWeight = "bold";
+									'underline';
+								queryUrlDisplay.style.fontWeight = 'bold';
 								queryUrlDisplay.onclick = () => {
 									navigator.clipboard.writeText(nextQueryUrl);
 									queryUrlDisplay.textContent =
-										"Query URL copied to clipboard!";
+										'Query URL copied to clipboard!';
 									if (downloaded) {
 										setTimeout(() => {
 											queryUrlDisplay.removeAttribute(
-												"style"
+												'style',
 											);
 											searchUnfold.click();
 											searchModeSelect.focus();
-											searchModeSelect.value = "url";
+											searchModeSelect.value = 'url';
 											searchModeSelect.dispatchEvent(
-												new Event("change")
+												new Event('change'),
 											);
 											queryUrlInput.value = nextQueryUrl;
 											extractContainer.style.display =
-												"none";
+												'none';
 											resultsContainer.style.display =
-												"none";
+												'none';
 											statuses = [];
 											posts = [];
 											downloaded = false;
@@ -1051,11 +886,11 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 							continue;
 						} else if (!response.ok) {
 							window.alert(
-								`Error fetching results: HTTP error ${response.status}`
+								`Error fetching results: HTTP error ${response.status}`,
 							);
 							abort = true;
 							throw new Error(
-								"HTTP error, could not fetch search results"
+								'HTTP error, could not fetch search results',
 							);
 						} else {
 							const data = await response.json();
@@ -1067,7 +902,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 								!results.length ||
 								(offset > 1 && results.length <= 1)
 							) {
-								window.alert("No more results to fetch.");
+								window.alert('No more results to fetch.');
 								abort = true;
 							}
 							for (let s of results) {
@@ -1100,16 +935,16 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 								let rawText = s.content;
 								let rawTextHtml = parser.parseFromString(
 									rawText,
-									"text/html"
+									'text/html',
 								);
 								let rawTextString =
 									rawTextHtml.documentElement.innerHTML;
 								rawTextString = rawTextString
-									.replaceAll("<br>", "\n")
-									.replaceAll("<p>", "\n")
-									.replaceAll(/<.+?>/gu, "");
-								s.content = rawTextString.normalize("NFC");
-								if (!s.content || s.content.trim() === "") {
+									.replaceAll('<br>', '\n')
+									.replaceAll('<p>', '\n')
+									.replaceAll(/<.+?>/gu, '');
+								s.content = rawTextString.normalize('NFC');
+								if (!s.content || s.content.trim() === '') {
 									skippedItems++;
 									continue;
 								}
@@ -1136,7 +971,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		// Show data options dialog
 		function getCheckedMetadata() {
 			return new Promise((resolve) => {
-				chrome.storage.local.get("tsCheckedMetadata", (results) => {
+				chrome.storage.local.get('tsCheckedMetadata', (results) => {
 					resolve(results.tsCheckedMetadata || []);
 				});
 			});
@@ -1146,31 +981,31 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
 		async function showOptions(statuses) {
 			const keyTree = await buildKeyTree(statuses);
-			const container = dlDialog.querySelector("#keys-container");
-			container.textContent = "";
+			const container = dlDialog.querySelector('#keys-container');
+			container.textContent = '';
 			generateListTree(keyTree, container);
 			const checkboxes = dlDialog.querySelectorAll(
-				'input[type="checkbox"].data-item'
+				'input[type="checkbox"].data-item',
 			);
 			checkboxes.forEach((checkbox) => {
 				updateParentCheckboxes(checkbox);
 				if (checkbox.checked || checkbox.indeterminate) {
-					const div = checkbox.closest("div.nested-container");
+					const div = checkbox.closest('div.nested-container');
 					if (div) {
-						div.style.height = "auto";
+						div.style.height = 'auto';
 						const arrow = div
-							.closest("li")
-							.querySelector("span.arrow");
+							.closest('li')
+							.querySelector('span.arrow');
 						if (arrow) {
-							arrow.textContent = "[less]";
+							arrow.textContent = '[less]';
 						}
 					}
 				}
 			});
-			const postCountSpan = dlDialog.querySelector("#post-count");
-			postCountSpan.textContent = `${statuses.length} post(s) extracted — `;
-			const closeBtn = dlDialog.querySelector(".close-btn");
-			closeBtn.addEventListener("click", () => {
+			const postCountSpan = dlDialog.querySelector('#post-count');
+			postCountSpan.textContent = `${statuses.length} post(s) extracted.`;
+			const closeBtn = dlDialog.querySelector('.close-btn');
+			closeBtn.addEventListener('click', () => {
 				dlDialog.close();
 			});
 			dlDialog.showModal();
@@ -1178,7 +1013,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			async function buildKeyTree(records) {
 				let tree = {};
 				for (let record of records) {
-					async function addToTree(obj, record, prefix = "") {
+					async function addToTree(obj, record, prefix = '') {
 						for (let key of Object.keys(record)) {
 							if (record.hasOwnProperty(key)) {
 								const value = record[key];
@@ -1186,7 +1021,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 									? `${prefix}.${key}`
 									: key;
 								if (
-									typeof value === "object" &&
+									typeof value === 'object' &&
 									value !== null
 								) {
 									if (!obj[fullKey]) {
@@ -1195,7 +1030,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 									await addToTree(
 										obj[fullKey],
 										value,
-										fullKey
+										fullKey,
 									);
 								} else {
 									obj[fullKey] = null;
@@ -1209,23 +1044,29 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			}
 
 			async function generateListTree(tree, container) {
-				const ul = document.createElement("ul");
-				ul.style.listStyleType = "none";
+				const ul = document.createElement('ul');
+				ul.style.listStyleType = 'none';
+				tree = Object.keys(tree)
+					.sort()
+					.reduce((obj, key) => {
+						obj[key] = tree[key];
+						return obj;
+					}, {});
 
 				for (let key in tree) {
 					if (tree.hasOwnProperty(key)) {
-						const li = document.createElement("li");
-						const checkbox = document.createElement("input");
-						checkbox.type = "checkbox";
-						checkbox.classList.add("data-item");
+						const li = document.createElement('li');
+						const checkbox = document.createElement('input');
+						checkbox.type = 'checkbox';
+						checkbox.classList.add('data-item');
 						checkbox.id = key;
 						checkbox.name = key;
 
 						if (
-							key === "content" ||
-							key === "account.acct" ||
-							key === "created_at" ||
-							key === "url" ||
+							key === 'content' ||
+							key === 'account.acct' ||
+							key === 'created_at' ||
+							key === 'url' ||
 							(checkedMetadata &&
 								checkedMetadata.length &&
 								checkedMetadata.includes(key))
@@ -1233,10 +1074,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 							checkbox.checked = true;
 						}
 
-						const label = document.createElement("label");
+						const label = document.createElement('label');
 						label.htmlFor = key;
 						label.appendChild(
-							document.createTextNode(key.split(".").pop())
+							document.createTextNode(key.split('.').pop()),
 						);
 
 						li.appendChild(checkbox);
@@ -1244,66 +1085,66 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 						ul.appendChild(li);
 
 						if (tree[key] !== null) {
-							let arrow = document.createElement("span");
-							arrow.classList.add("arrow");
-							arrow.textContent = "[more]";
+							let arrow = document.createElement('span');
+							arrow.classList.add('arrow');
+							arrow.textContent = '[more]';
 							label.after(arrow);
 							const nestedContainer =
-								document.createElement("div");
-							nestedContainer.classList.add("nested-container");
-							nestedContainer.style.marginLeft = "20px";
-							nestedContainer.style.height = "0px";
-							arrow.addEventListener("click", (e) => {
+								document.createElement('div');
+							nestedContainer.classList.add('nested-container');
+							nestedContainer.style.marginLeft = '20px';
+							nestedContainer.style.height = '0px';
+							arrow.addEventListener('click', (e) => {
 								e.stopPropagation();
-								if (nestedContainer.style.height === "0px") {
-									nestedContainer.style.height = "auto";
-									arrow.textContent = "[less]";
+								if (nestedContainer.style.height === '0px') {
+									nestedContainer.style.height = 'auto';
+									arrow.textContent = '[less]';
 								} else {
 									const nestedContainers = Array.from(
 										li.querySelectorAll(
-											"div.nested-container"
-										)
+											'div.nested-container',
+										),
 									);
 									nestedContainers.forEach((container) => {
-										container.style.height = "0px";
+										container.style.height = '0px';
 									});
 									const arrows = Array.from(
-										li.querySelectorAll("span.arrow")
+										li.querySelectorAll('span.arrow'),
 									);
 									arrows.forEach((a) => {
-										a.textContent = "[more]";
+										a.textContent = '[more]';
 									});
 								}
 							});
 							generateListTree(tree[key], nestedContainer);
 							li.appendChild(nestedContainer);
 
-							checkbox.addEventListener("change", function () {
+							checkbox.addEventListener('change', function () {
 								const childCheckboxes =
 									nestedContainer.querySelectorAll(
-										'input[type="checkbox"]'
+										'input[type="checkbox"]',
 									);
 								childCheckboxes.forEach((childCheckbox) => {
 									childCheckbox.checked = checkbox.checked;
 									childCheckbox.indeterminate = false;
 								});
 								if (checkbox.checked) {
-									nestedContainer.style.height = "auto";
-									arrow.textContent = "[less]";
+									nestedContainer.style.height = 'auto';
+									arrow.textContent = '[less]';
 								} else {
-									nestedContainer.style.height = "0px";
-									arrow.textContent = "[more]";
+									nestedContainer.style.height = '0px';
+									arrow.textContent = '[more]';
 								}
 							});
 						}
 
-						checkbox.addEventListener("change", function () {
+						checkbox.addEventListener('change', function () {
 							updateParentCheckboxes(checkbox);
 						});
 					}
 				}
 				Array.from(
-					container.querySelectorAll("input[type='checkbox']")
+					container.querySelectorAll("input[type='checkbox']"),
 				).forEach((checkbox) => {
 					if (checkbox.checked) {
 						updateParentCheckboxes(checkbox);
@@ -1314,19 +1155,19 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		}
 
 		function updateParentCheckboxes(checkbox) {
-			const parentLi = checkbox.closest("li").parentElement.closest("li");
+			const parentLi = checkbox.closest('li').parentElement.closest('li');
 			if (parentLi) {
 				const parentCheckbox = parentLi.querySelector(
-					'input[type="checkbox"]'
+					'input[type="checkbox"]',
 				);
 				const childCheckboxes = parentLi.querySelectorAll(
-					'div > ul > li > input[type="checkbox"]'
+					'div > ul > li > input[type="checkbox"]',
 				);
 				const allChecked = Array.from(childCheckboxes).every(
-					(child) => child.checked
+					(child) => child.checked,
 				);
 				const someChecked = Array.from(childCheckboxes).some(
-					(child) => child.checked
+					(child) => child.checked,
 				);
 
 				parentCheckbox.checked = allChecked;
@@ -1336,67 +1177,61 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			}
 		}
 
-		let fileFormat = "xml";
-		formatSelect.addEventListener("change", () => {
+		let fileFormat = 'xml';
+		formatSelect.addEventListener('change', () => {
+			const tableFormat = dlDialog.querySelector(
+				'label[for="table-checkbox"]',
+			);
 			fileFormat = formatSelect.value;
-			if (fileFormat === "xlsx") {
-				const tableFormat = document.createElement("label");
-				tableFormat.htmlFor = "table-checkbox";
-				tableFormat.textContent = "Format as table";
-				tableFormat.style.display = "block";
-				const tableCheckbox = document.createElement("input");
-				tableCheckbox.type = "checkbox";
-				tableCheckbox.id = "table-checkbox";
-				tableCheckbox.style.verticalAlign = "middle";
-				tableCheckbox.checked = true;
-				tableFormat.appendChild(tableCheckbox);
-				dlConfirmBtn.after(tableFormat);
-			} else {
-				const tableFormat = document.querySelector(
-					'label[for="table-checkbox"]'
+			if (fileFormat === 'xlsx') {
+				tableFormat.style.display = 'block';
+				const tableCheckbox = dlDialog.querySelector(
+					'input#table-checkbox',
 				);
-				if (tableFormat) {
-					tableFormat.remove();
-				}
+				tableCheckbox.checked = true;
+			} else {
+				tableFormat.style.display = 'none';
 			}
 		});
 
 		// Listen to anonymize checkbox
-		anonymizeCheckbox.addEventListener("change", () => {
+		anonymizeCheckbox.addEventListener('change', () => {
 			const authorHandleCheckbox =
-				document.getElementById("account.acct");
+				document.getElementById('account.acct');
 			if (anonymizeCheckbox.checked) {
 				authorHandleCheckbox.checked = true;
 				authorHandleCheckbox.disabled = true;
 				authorHandleCheckbox.nextElementSibling.textContent +=
-					" (required for anonymization)";
+					' (required for anonymization)';
 				updateParentCheckboxes(authorHandleCheckbox);
 			} else {
 				authorHandleCheckbox.disabled = false;
-				authorHandleCheckbox.nextElementSibling.textContent = "acct";
+				authorHandleCheckbox.nextElementSibling.textContent = 'acct';
 			}
 		});
 
 		// Listen to download button
-		dlConfirmBtn.addEventListener("click", async () => {
+		dlConfirmBtn.addEventListener('click', async () => {
 			await buildData();
-			if (fileFormat === "json") {
+			if (fileFormat === 'json') {
 				downloadJson();
-			} else if (fileFormat === "csv") {
+			} else if (fileFormat === 'csv') {
 				downloadCsv();
-			} else if (fileFormat === "xml") {
+			} else if (fileFormat === 'xml') {
 				downloadXml();
-			} else if (fileFormat === "txt") {
+			} else if (fileFormat === 'txt') {
 				downloadTxt();
-			} else if (fileFormat === "xlsx") {
+			} else if (fileFormat === 'xlsx') {
 				downloadXlsx();
+			} else if (fileFormat === 'ske') {
+				downloadSke();
 			}
 			downloaded = true;
 		});
 
 		function getNestedValue(obj, keyPath) {
 			return keyPath
-				.split(".")
+				.split('.')
 				.reduce((acc, key) => acc && acc[key], obj);
 		}
 
@@ -1417,7 +1252,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				}
 				posts = [];
 				const checkboxes = dlDialog.querySelectorAll(
-					'input[type="checkbox"].data-item'
+					'input[type="checkbox"].data-item',
 				);
 				let checkedCheckboxes = Array.from(checkboxes)
 					.filter((checkbox) => checkbox.checked)
@@ -1435,7 +1270,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 						if (checkbox.checked) {
 							const key = checkbox.id;
 							const value = getNestedValue(s, key);
-							post[key.replaceAll(".", "-")] = value;
+							post[key.replaceAll('.', '-')] = value;
 						}
 					}
 					posts.push(post);
@@ -1446,63 +1281,63 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
 		// Download functions
 		function downloadCsv() {
-			const spinner = document.createElement("span");
-			spinner.classList.add("spinner");
-			dlConfirmBtn.textContent = "";
+			const spinner = document.createElement('span');
+			spinner.classList.add('spinner');
+			dlConfirmBtn.textContent = '';
 			dlConfirmBtn.appendChild(spinner);
-			spinner.style.display = "inline-block";
-			const header = Object.keys(posts[0]).join("\t");
-			const rows = posts.map((post) => Object.values(post).join("\t"));
-			const csv = [header, ...rows].join("\n");
-			const blob = new Blob([csv], { type: "text/csv" });
+			spinner.style.display = 'inline-block';
+			const header = Object.keys(posts[0]).join('\t');
+			const rows = posts.map((post) => Object.values(post).join('\t'));
+			const csv = [header, ...rows].join('\n');
+			const blob = new Blob([csv], { type: 'text/csv' });
 			const url = URL.createObjectURL(blob);
-			const anchor = document.createElement("a");
+			const anchor = document.createElement('a');
 			anchor.href = url;
-			anchor.download = "TruthSocial_scrape.csv";
+			anchor.download = 'TruthSocial_scrape.csv';
 			spinner.remove();
-			dlConfirmBtn.textContent = "Download";
+			dlConfirmBtn.textContent = 'Download';
 			anchor.click();
 		}
 
 		function downloadJson() {
-			const spinner = document.createElement("span");
-			spinner.classList.add("spinner");
-			dlConfirmBtn.textContent = "";
+			const spinner = document.createElement('span');
+			spinner.classList.add('spinner');
+			dlConfirmBtn.textContent = '';
 			dlConfirmBtn.appendChild(spinner);
-			spinner.style.display = "inline-block";
+			spinner.style.display = 'inline-block';
 			const json = JSON.stringify(posts, null, 2);
-			const blob = new Blob([json], { type: "application/json" });
+			const blob = new Blob([json], { type: 'application/json' });
 			const url = URL.createObjectURL(blob);
-			const anchor = document.createElement("a");
+			const anchor = document.createElement('a');
 			anchor.href = url;
-			anchor.download = "TruthSocial_scrape.json";
+			anchor.download = 'TruthSocial_scrape.json';
 			spinner.remove();
-			dlConfirmBtn.textContent = "Download";
+			dlConfirmBtn.textContent = 'Download';
 			anchor.click();
 		}
 
 		function downloadXml() {
-			const spinner = document.createElement("span");
-			spinner.classList.add("spinner");
-			dlConfirmBtn.textContent = "";
+			const spinner = document.createElement('span');
+			spinner.classList.add('spinner');
+			dlConfirmBtn.textContent = '';
 			dlConfirmBtn.appendChild(spinner);
-			spinner.style.display = "inline-block";
-			let xml = "<Text>";
+			spinner.style.display = 'inline-block';
+			let xml = '<Text>';
 			for (let p of posts) {
-				let postData = "<lb/>\n<post";
+				let postData = '<lb/>\n<post';
 				for (let [key, value] of Object.entries(p)) {
-					if (typeof value === "string") {
+					if (typeof value === 'string') {
 						p[key] = value
-							.replaceAll(/&/g, "&amp;")
-							.replaceAll(/</g, "&lt;")
-							.replaceAll(/>/g, "&gt;")
-							.replaceAll(/"/g, "&quot;")
-							.replaceAll(/'/g, "&apos;")
-							.replaceAll(/\u00A0/g, " ");
+							.replaceAll(/&/g, '&amp;')
+							.replaceAll(/</g, '&lt;')
+							.replaceAll(/>/g, '&gt;')
+							.replaceAll(/"/g, '&quot;')
+							.replaceAll(/'/g, '&apos;')
+							.replaceAll(/\u00A0/g, ' ');
 					}
-					if (key.includes("_")) {
+					if (key.includes('_')) {
 						delete p[key];
-						let keyParts = key.split("_");
+						let keyParts = key.split('_');
 						keyParts.forEach((part, index) => {
 							if (index > 0) {
 								keyParts[index] =
@@ -1510,16 +1345,16 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 									part.slice(1);
 							}
 						});
-						key = keyParts.join("");
+						key = keyParts.join('');
 						p[key] = value;
 					}
-					if (key !== "content" && key !== "url") {
+					if (key !== 'content' && key !== 'url') {
 						postData += ` ${key}="${p[key]}"`;
 					}
 				}
-				postData += ">";
+				postData += '>';
 				postData += `<lb/><ref target="${p.url}">Link to post</ref><lb/>`;
-				let text = p["content"];
+				let text = p['content'];
 				const urlRegex =
 					/(?:https?|ftp):\/\/[-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[-A-Za-z0-9+&@#\/%=~_|]/;
 				const links = text.match(urlRegex);
@@ -1527,45 +1362,88 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					for (l of links) {
 						const newLink = l.replace(
 							/(.+)/,
-							`<ref target="$1">$1</ref>`
+							`<ref target="$1">$1</ref>`,
 						);
 						text = text.replace(l, newLink);
 					}
 				}
-				postData += `<lb/>${text.replaceAll(/\n/g, "<lb/>")}`;
-				postData += "</post><lb/><lb/>\n";
+				postData += `<lb/>${text.replaceAll(/\n/g, '<lb/>')}`;
+				postData += '</post><lb/><lb/>\n';
 				xml += postData;
 			}
 			xml += `</Text>`;
-			const blob = new Blob([xml], { type: "application/xml" });
+			const blob = new Blob([xml], { type: 'application/xml' });
 			const url = URL.createObjectURL(blob);
-			const anchor = document.createElement("a");
+			const anchor = document.createElement('a');
 			anchor.href = url;
-			anchor.download = "TruthSocial_scrape.xml";
+			anchor.download = 'TruthSocial_scrape.xml';
 			spinner.remove();
-			dlConfirmBtn.textContent = "Download";
+			dlConfirmBtn.textContent = 'Download';
+			anchor.click();
+		}
+
+		function downloadSke() {
+			const spinner = document.createElement('span');
+			spinner.classList.add('spinner');
+			dlConfirmBtn.textContent = '';
+			dlConfirmBtn.appendChild(spinner);
+			spinner.style.display = 'inline-block';
+			let xml = '';
+			for (let p of posts) {
+				let postData = '<post';
+				for (let [key, value] of Object.entries(p)) {
+					if (typeof value === 'string') {
+						p[key] = value
+							.replaceAll(/&/g, '&amp;')
+							.replaceAll(/</g, '&lt;')
+							.replaceAll(/>/g, '&gt;')
+							.replaceAll(/"/g, '&quot;')
+							.replaceAll(/'/g, '&apos;')
+							.replaceAll(/\u00A0/g, ' ');
+					}
+					if (key.includes('-')) {
+						delete p[key];
+						key = key.replaceAll(/\W/g, '_');
+						p[key] = value;
+					}
+					if (key !== 'content') {
+						postData += ` ${key}="${p[key]}"`;
+					}
+				}
+				postData += '>';
+				postData += p['content'];
+				postData += '</post>\n\n';
+				xml += postData;
+			}
+			const blob = new Blob([xml], { type: 'application/xml' });
+			const url = URL.createObjectURL(blob);
+			const anchor = document.createElement('a');
+			anchor.href = url;
+			anchor.download = 'TruthSocial_scrape.xml';
+			spinner.remove();
+			dlConfirmBtn.textContent = 'Download';
 			anchor.click();
 		}
 
 		function downloadTxt() {
-			const spinner = document.createElement("span");
-			spinner.classList.add("spinner");
-			dlConfirmBtn.textContent = "";
+			const spinner = document.createElement('span');
+			spinner.classList.add('spinner');
+			dlConfirmBtn.textContent = '';
 			dlConfirmBtn.appendChild(spinner);
-			spinner.style.display = "inline-block";
-			let txt = "";
+			spinner.style.display = 'inline-block';
+			let txt = '';
 			for (let p of posts) {
-				let postData = p["content"];
-				postData += "\n\n";
+				let postData = p['content'];
+				postData += '\n\n';
 				txt += postData;
 			}
-			const blob = new Blob([txt], { type: "text/plain" });
+			const blob = new Blob([txt], { type: 'text/plain' });
 			const url = URL.createObjectURL(blob);
-			const anchor = document.createElement("a");
+			const anchor = document.createElement('a');
 			anchor.href = url;
-			anchor.download = "TruthSocial_scrape.txt";
+			anchor.download = 'TruthSocial_scrape.txt';
 			spinner.remove();
-			dlConfirmBtn.textContent = "Download";
+			dlConfirmBtn.textContent = 'Download';
 			anchor.click();
 		}
 
@@ -1573,37 +1451,37 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			const manifestVersion =
 				chrome.runtime.getManifest().manifest_version;
 			if (manifestVersion === 3) {
-				const tableCheckbox = dialog.querySelector("#table-checkbox");
+				const tableCheckbox = dialog.querySelector('#table-checkbox');
 				chrome.runtime.sendMessage(
 					{
-						action: "generateXlsx",
+						action: 'generateXlsx',
 						posts: posts,
 						formatTable: tableCheckbox.checked,
 					},
 					(response) => {
 						if (response && response.success) {
 							const binaryUrl = response.url;
-							const binaryString = atob(binaryUrl.split(",")[1]);
+							const binaryString = atob(binaryUrl.split(',')[1]);
 							const len = binaryString.length;
 							const bytes = new Uint8Array(len);
 							for (let i = 0; i < len; i++) {
 								bytes[i] = binaryString.charCodeAt(i);
 							}
 							const blob = new Blob([bytes], {
-								type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+								type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 							});
 							const url = URL.createObjectURL(blob);
-							const anchor = document.createElement("a");
+							const anchor = document.createElement('a');
 							anchor.href = url;
-							anchor.download = "TruthSocial_scrape.xlsx";
+							anchor.download = 'TruthSocial_scrape.xlsx';
 							anchor.click();
 						} else {
 							console.error(
-								"Error generating XLSX:",
-								response.error
+								'Error generating XLSX:',
+								response.error,
 							);
 						}
-					}
+					},
 				);
 				return;
 			}
@@ -1627,7 +1505,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			});
 
 			const workbook = new ExcelJS.Workbook();
-			const worksheet = workbook.addWorksheet("TruthSocial_scrape");
+			const worksheet = workbook.addWorksheet('TruthSocial_scrape');
 			worksheet.columns = Object.keys(posts[0]).map((key) => {
 				return { header: key, key: key, width: widths.shift() };
 			});
@@ -1645,11 +1523,11 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				for (let [key, value] of Object.entries(p)) {
 					if (isDate(value)) {
 						value = new Date(value);
-					} else if (key === "url") {
+					} else if (key === 'url') {
 						value = {
 							text: value,
 							hyperlink: value,
-							tooltip: "Link to post",
+							tooltip: 'Link to post',
 						};
 					}
 					row.push(value);
@@ -1657,15 +1535,15 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				rows.push(row);
 			}
 
-			const tableCheckbox = dialog.querySelector("#table-checkbox");
+			const tableCheckbox = dialog.querySelector('#table-checkbox');
 			if (tableCheckbox.checked) {
 				worksheet.addTable({
-					name: "TruthSocial_scrape",
-					ref: "A1",
+					name: 'TruthSocial_scrape',
+					ref: 'A1',
 					headerRow: true,
 					totalsRow: false,
 					style: {
-						theme: "TableStyleMedium9",
+						theme: 'TableStyleMedium9',
 						showRowStripes: true,
 					},
 					columns: worksheet.columns.map((col) => ({
@@ -1677,35 +1555,62 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			} else {
 				worksheet.addRows(rows);
 			}
-			const urlCol = worksheet.getColumn("url");
-			if (urlCol) {
-				urlCol.eachCell(function (cell) {
+			worksheet.columns.forEach((column) => {
+				let maxLength = 10;
+				column.eachCell({ includeEmpty: true }, (cell) => {
+					cell.alignment = {
+						wrapText: true,
+						vertical: 'top',
+						shrinkToFit: true,
+					};
 					if (cell.value && cell.value.hyperlink) {
 						cell.style = {
 							font: {
-								color: { argb: "ff0000ff" },
+								size: 12,
+								color: { argb: 'ff0000ff' },
 								underline: true,
 							},
 						};
+					} else {
+						cell.font = { size: 12 };
+					}
+					let cellValue = cell.value.text || cell.value;
+					if (cellValue instanceof Date) {
+						cellValue = cellValue.toISOString();
+					}
+					let cellLength = cellValue
+						? cellValue.toString().length
+						: 10;
+					if (cellLength > maxLength) {
+						maxLength = cellLength;
 					}
 				});
-			}
+				if (maxLength >= 150) {
+					maxLength = maxLength / 2;
+				}
+				column.width = maxLength;
+			});
+			worksheet.getRow(1).font = {
+				bold: true,
+				size: 12,
+				color: { argb: 'FFFFFFFF' },
+			};
 			const buffer = await workbook.xlsx.writeBuffer();
 			const blob = new Blob([buffer], {
-				type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+				type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 			});
 			const url = URL.createObjectURL(blob);
-			const anchor = document.createElement("a");
+			const anchor = document.createElement('a');
 			anchor.href = url;
-			anchor.download = "TruthSocial_scrape.xlsx";
+			anchor.download = 'TruthSocial_scrape.xlsx';
 			anchor.click();
 		}
 
 		// Assign role to reset button
-		resetBtn.addEventListener("click", () => {
-			const inputs = searchContainer.querySelectorAll("input");
+		resetBtn.addEventListener('click', () => {
+			const inputs = searchContainer.querySelectorAll('input');
 			for (let input of inputs) {
-				input.value = "";
+				input.value = '';
 			}
 			location.reload();
 		});

@@ -4,18 +4,19 @@ dialog.ts-scraper-dialog {
 	text-align: center;
 	width: auto;
 	height: auto;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-    margin: auto;
+	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+	margin: auto;
 }
 
 dialog.ts-scraper-dialog {
-	color: #08051B;
+	color: #08051b;
 	background-color: white;
 	text-align: center;
-	font-family: "Inter", ui-sans-serif, system-ui, "-apple-system",
-		"BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "Noto Sans",
-		"sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-		"Noto Color Emoji";
+	font-family:
+		'Inter', ui-sans-serif, system-ui, '-apple-system',
+		'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial',
+		'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji',
+		'Segoe UI Symbol', 'Noto Color Emoji';
 	font-size: small;
 	height: auto;
 	padding: 10px;
@@ -36,7 +37,7 @@ dialog.ts-scraper-dialog div#version-div {
 }
 
 dialog.ts-scraper-dialog div#instructions {
-	color: #08051B;
+	color: #08051b;
 	font-weight: bold;
 	text-decoration: underline;
 	cursor: pointer;
@@ -44,20 +45,20 @@ dialog.ts-scraper-dialog div#instructions {
 }
 
 dialog.ts-scraper-dialog div#instructions:hover {
-	color: #5448EE;
+	color: #5448ee;
 }
 
 dialog.ts-scraper-dialog div#instructions-container {
 	background-color: #e7e8fe;
-	color: #08051B;
+	color: #08051b;
 	padding: 5px;
 	margin-bottom: 10px;
 }
 
 dialog.ts-scraper-dialog button.ts-scraper,
 dialog.ts-scraper-dialog select.ts-scraper {
-	color: #08051B;
-	border: solid 1px #5448EE;
+	color: #08051b;
+	border: solid 1px #5448ee;
 	background-color: white;
 	height: auto;
 	width: 100px;
@@ -84,7 +85,7 @@ dialog.ts-scraper-dialog button#abort-btn:hover {
 
 dialog.ts-scraper-dialog button#reset-auth {
 	width: auto;
-    padding: 2px 4px;
+	padding: 2px 4px;
 	color: #e60000;
 	border-color: #e60000;
 	margin: 5px;
@@ -115,7 +116,7 @@ dialog.ts-scraper-dialog select.ts-scraper:hover {
 
 dialog.ts-scraper-dialog .masto-spinner {
 	border: 2px solid #e7e8fe;
-	border-left: 2px solid #5448EE;
+	border-left: 2px solid #5448ee;
 	border-radius: 50%;
 	width: 12px;
 	height: 12px;
@@ -154,18 +155,18 @@ dialog.ts-scraper-dialog div.fold {
 
 dialog.ts-scraper-dialog div#auth-fold::after,
 dialog.ts-scraper-dialog div#search-fold::after {
-	content: "—";
+	content: '—';
 	float: right;
 }
 
 dialog.ts-scraper-dialog div#auth-unfold::after,
 dialog.ts-scraper-dialog div#search-unfold::after {
-	content: "+";
+	content: '+';
 	float: right;
 }
 
 dialog.ts-scraper-dialog div#auth-container {
-	border: 1px solid #5448EE;
+	border: 1px solid #5448ee;
 	border-radius: 4px;
 	margin: 1em auto 1em;
 	padding: 1em;
@@ -192,12 +193,12 @@ dialog.ts-scraper-dialog input.ts-scraper {
 	padding-left: 5px;
 	border-radius: 4px;
 	margin: 5px;
-	border: solid 1px #5448EE;
+	border: solid 1px #5448ee;
 	display: inline-block;
 }
 
 dialog.ts-scraper-dialog input.ts-scraper:focus-visible {
-	outline: solid 2px #5448EE;
+	outline: solid 2px #5448ee;
 }
 
 dialog.ts-scraper-dialog input#token-input {
@@ -208,13 +209,13 @@ dialog.ts-scraper-dialog input#max-toots {
 	width: 100px;
 }
 
-dialog.ts-scraper-dialog input[type="checkbox"] {
+dialog.ts-scraper-dialog input[type='checkbox'] {
 	margin: auto 2px;
 }
 
 dialog.ts-scraper-dialog div#notice {
 	width: 512px;
-	color: #08051B;
+	color: #08051b;
 	border: 2px solid #e66300;
 	border-radius: 4px;
 	background-color: #fff099;
@@ -225,12 +226,12 @@ dialog.ts-scraper-dialog div#notice {
 }
 
 dialog.ts-scraper-dialog a {
-	color: #08051B;
+	color: #08051b;
 	font-weight: bold;
 }
 
 dialog.ts-scraper-dialog a:hover {
-	color: #5448EE;
+	color: #5448ee;
 }
 
 dialog.ts-scraper-dialog a.notice {
@@ -272,7 +273,7 @@ dialog.ts-scraper-dialog div#expert-instructions {
 	width: 300px !important;
 	display: inline-block;
 	margin-top: 5px;
-	color: #08051B;
+	color: #08051b;
 	font-size: small;
 	width: 95%;
 }
@@ -285,7 +286,7 @@ dialog.ts-scraper-dialog div#queryurl {
 
 dialog.ts-scraper-dialog dialog {
 	width: 50%;
-	height: 80vh;
+	height: 90%;
 	border: none;
 	border-radius: 5px;
 	box-shadow: 0 0 10px 0 #aaa;
@@ -293,41 +294,44 @@ dialog.ts-scraper-dialog dialog {
 
 dialog.ts-scraper-dialog dialog div.close-btn {
 	position: absolute;
-	top: 5px;
-	right: 10px;
+	top: 0.5rem;
+	right: 1rem;
 	cursor: pointer;
 }
 
 dialog.ts-scraper-dialog dialog div#dl-container {
-	height: 90%;
-    padding: 1rem;
+	height: 100%;
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	position: relative;
 }
 
 dialog.ts-scraper-dialog dialog div#keys-container {
-	height: 90%;
 	border: 1px solid #ccc;
 	border-radius: 5px;
-	background-color: #eee;
-	margin: 10px 0;
-	overflow-y: scroll;
+	overflow-y: auto;
 	text-align: left;
-    padding: 1rem;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	padding: 1rem;
 }
 
 dialog label {
-    display: inline-block;
+	display: inline-block;
 }
 
 dialog span.arrow {
-    cursor: pointer;
-    margin-left: 0.5rem;
-    font-size: x-small;
-    color: #5448EE;
+	cursor: pointer;
+	margin-left: 0.5rem;
+	font-size: x-small;
+	color: #5448ee;
 }
 
 dialog div.nested-container {
-    overflow: hidden;
-    transition: height 0.3s ease;
+	overflow: hidden;
+	transition: height 0.3s ease;
 }
 
 dialog.ts-scraper-dialog dialog label {
@@ -338,18 +342,18 @@ dialog.ts-scraper-dialog .dl-ui {
 	width: auto;
 	height: auto;
 	padding: 5px;
-	border: solid 1px #5448EE;
+	border: solid 1px #5448ee;
 	background-color: white;
 	border-radius: 5px;
 	font-size: medium;
 	font-weight: normal;
-	color: #08051B;
+	color: #08051b;
 	display: inline-block;
 	vertical-align: middle;
 }
 
 dialog.ts-scraper-dialog select.dl-ui {
-    width: 7rem;
+	width: auto;
 }
 
 dialog.ts-scraper-dialog .dl-ui:hover {
