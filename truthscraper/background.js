@@ -5,6 +5,18 @@ if (navigator.userAgent.indexOf('Chrome') > -1) {
 
 let tabId;
 
+let token = null;
+let clientId = null;
+let clientSecret = null;
+chrome.storage.local.get(
+	['tsusertoken', 'tsclientid', 'tsclientsecret'],
+	(result) => {
+		token = result.tsusertoken;
+		clientId = result.tsclientid;
+		clientSecret = result.tsclientsecret;
+	},
+);
+
 const manifest = chrome.runtime.getManifest();
 const origins = manifest.host_permissions;
 async function checkPermissions() {
@@ -97,7 +109,25 @@ chrome.webNavigation.onCommitted.addListener(
 				chrome.tabs.sendMessage(tabId, {
 					action: 'accessResetDone',
 				});
-				chrome.tabs.update(tabId, { active: true });
+				chrome.tabs.update(tabId, { active: true, highlighted: true });
+				if (evt.url.includes('oauth/v2/token')) {
+					chrome.scripting.executeScript({
+						target: { tabId: tabId },
+						func: () => {
+							const signinBtn = document.querySelector(
+								'button[type="submit"]',
+							);
+							if (
+								signinBtn &&
+								signinBtn.textContent
+									.toLowerCase()
+									.includes('sign in')
+							) {
+								signinBtn.click();
+							}
+						},
+					});
+				}
 			} else {
 				chrome.tabs.query(
 					{ active: true, currentWindow: true },
@@ -106,7 +136,29 @@ chrome.webNavigation.onCommitted.addListener(
 							chrome.tabs.sendMessage(tabs[0].id, {
 								action: 'accessResetDone',
 							});
-							chrome.tabs.update(tabs[0].id, { active: true });
+							chrome.tabs.update(tabs[0].id, {
+								active: true,
+								highlighted: true,
+							});
+							if (evt.url.includes('oauth/v2/token')) {
+								chrome.scripting.executeScript({
+									target: { tabId: tabs[0].id },
+									func: () => {
+										const signinBtn =
+											document.querySelector(
+												'button[type="submit"]',
+											);
+										if (
+											signinBtn &&
+											signinBtn.textContent
+												.toLowerCase()
+												.includes('sign in')
+										) {
+											signinBtn.click();
+										}
+									},
+								});
+							}
 						}
 					},
 				);
@@ -114,7 +166,12 @@ chrome.webNavigation.onCommitted.addListener(
 			resetting = false;
 		}
 	},
-	{ url: [{ urlContains: 'https://truthsocial.com/api/' }] },
+	{
+		url: [
+			{ urlContains: 'https://truthsocial.com/api/' },
+			{ urlContains: 'https://truthsocial.com/oauth/v2/token' },
+		],
+	},
 );
 
 let forbidden = false;
@@ -140,11 +197,30 @@ chrome.webRequest.onResponseStarted.addListener(
 		}
 		if (details.statusCode === 200) {
 			forbidden = false;
+			if (details.url.includes('oauth/revoke')) {
+				chrome.storage.local.remove(
+					[
+						'tsusertoken',
+						'tsclientid',
+						'tsclientsecret',
+						'understand',
+					],
+					() => {
+						token = null;
+						clientId = null;
+						clientSecret = null;
+					},
+				);
+			}
 			return;
 		}
 	},
 	{
-		urls: ['https://truthsocial.com/api/*'],
+		urls: [
+			'https://truthsocial.com/api/*',
+			'https://truthsocial.com/oauth/v2/token',
+			'https://truthsocial.com/oauth/revoke',
+		],
 	},
 	['responseHeaders'],
 );
@@ -161,7 +237,6 @@ async function resetAccess(url) {
 	});
 }
 
-let token = null;
 chrome.webRequest.onBeforeSendHeaders.addListener(
 	(details) => {
 		const authHeader = details.requestHeaders.find(
@@ -169,6 +244,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 		);
 		if (authHeader) {
 			token = authHeader.value.replace('Bearer ', '');
+			chrome.storage.local.set({ tsusertoken: token });
 		}
 	},
 	{
@@ -176,13 +252,51 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 	},
 	['requestHeaders'],
 );
+chrome.webRequest.onBeforeRequest.addListener(
+	(details) => {
+		if (details.method === 'POST') {
+			try {
+				const requestBody = details.requestBody;
+				if (requestBody && requestBody.raw && requestBody.raw.length) {
+					const decoder = new TextDecoder('utf-8');
+					const uint8Array = new Uint8Array(requestBody.raw[0].bytes);
+					const bodyString = decoder.decode(uint8Array);
+					const bodyJson = JSON.parse(bodyString);
+					if (bodyJson.client_id) {
+						clientId = bodyJson.client_id;
+						chrome.storage.local.set({ tsclientid: clientId });
+					}
+					if (bodyJson.client_secret) {
+						clientSecret = bodyJson.client_secret;
+						chrome.storage.local.set({
+							tsclientsecret: clientSecret,
+						});
+					}
+				}
+			} catch (error) {
+				console.error('Error reading request body:', error);
+			}
+		}
+	},
+	{
+		urls: ['https://truthsocial.com/oauth/v2/token'],
+	},
+	['requestBody'],
+);
 
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	tabId = sender.tab ? sender.tab.id : null;
-	if (message && message.action === 'sendToken') {
-		sendResponse({ success: true, token: token });
+	if (message && message.action === 'sendCreds') {
+		sendResponse({
+			success: true,
+			creds: { token, clientId, clientSecret },
+		});
 		return;
+	}
+	if (message && message.action === 'removeToken') {
+		revokeToken(sendResponse);
+		return true;
 	}
 	if (message && message.action === 'checkForbidden') {
 		sendResponse({ forbidden: forbidden });
@@ -214,6 +328,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		return true;
 	}
 });
+
+async function revokeToken(sendResponse) {
+	const cookies = await chrome.cookies.getAll({
+		domain: 'truthsocial.com',
+	});
+	for (let cookie of cookies) {
+		await chrome.cookies.remove({
+			url: `https://${cookie.domain}${cookie.path}`,
+			name: cookie.name,
+		});
+	}
+	chrome.storage.local.remove(
+		['tsusertoken', 'tsclientid', 'tsclientsecret', 'understand'],
+		async () => {
+			token = null;
+			clientId = null;
+			clientSecret = null;
+			sendResponse({ success: true });
+		},
+	);
+}
 
 async function generateXlsx(posts, formatTable, sendResponse) {
 	let widths = [];

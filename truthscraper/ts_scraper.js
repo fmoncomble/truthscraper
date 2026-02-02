@@ -16,7 +16,6 @@ const checkOpenDialog = (message, sender, sendResponse) => {
 };
 chrome.runtime.onMessage.addListener(checkOpenDialog);
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-	console.log('Message received in TS scraper:', message);
 	if (message.action === 'start_truthscraper') {
 		sendResponse({ success: true });
 		chrome.runtime.sendMessage({
@@ -34,7 +33,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		const dialogHtml = await dialogRes.text();
 		dialog.innerHTML = dialogHtml;
 		document.body.appendChild(dialog);
-		dialog.showModal();
 		const authContainer = dialog.querySelector('#auth-container');
 		const authFold = dialog.querySelector('#auth-fold');
 		const authUnfold = dialog.querySelector('#auth-unfold');
@@ -99,10 +97,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		let tsInstance = 'truthsocial.com';
 		let clientId;
 		let clientSecret;
-		chrome.storage.local.get(['tsclientid'], (result) => {
+		chrome.storage.local.get(['tsclientid', 'tsclientsecret'], (result) => {
 			clientId = result.tsclientid;
-		});
-		chrome.storage.local.get(['tsclientsecret'], (result) => {
 			clientSecret = result.tsclientsecret;
 		});
 
@@ -111,30 +107,73 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		let userToken;
 
 		//Functions to handle user token
-		getUserToken(async function (userTokenResult) {
-			console.log('Stored token = ', userTokenResult);
-			await new Promise((resolve) => {
-				chrome.runtime.sendMessage(
-					{ action: 'sendToken' },
-					async (response) => {
-						if (response && response.success) {
-							console.log('Token from TS = ', response.token);
-							userToken = response.token;
+		async function getUserCreds() {
+			await new Promise(async (resolve) => {
+				const userCreds = await chrome.storage.local.get(
+					['tsusertoken', 'tsclientid', 'tsclientsecret'],
+					(result) => {
+						if (
+							result.tsusertoken &&
+							result.tsclientid &&
+							result.tsclientsecret
+						) {
+							userToken = result.tsusertoken;
+							clientId = result.tsclientid;
+							clientSecret = result.tsclientsecret;
 							resolve();
 						} else {
-							console.log('No token from TS');
-							userToken = null;
-							window.alert(
-								'You need to be logged into your Truth Social account.',
-							);
-							resolve();
+							const authData = localStorage.getItem('truth:auth');
+							const authObj = JSON.parse(authData);
+							const tokens = authObj.tokens;
+							const users = authObj.users;
+							const me = authObj.me;
+							if (me && tokens && users) {
+								userToken = users[me].access_token;
+								chrome.storage.local.set({
+									tsusertoken: userToken,
+								});
+								if (userToken) {
+									clientId = tokens[userToken].client_id;
+									clientSecret =
+										tokens[userToken].client_secret;
+									chrome.storage.local.set({
+										tsclientid: clientId,
+										tsclientsecret: clientSecret,
+									});
+									resolve();
+								}
+							} else {
+								chrome.runtime.sendMessage(
+									{ action: 'sendCreds' },
+									async (response) => {
+										if (response && response.success) {
+											userToken = response.creds.token;
+											clientId = response.creds.clientId;
+											clientSecret =
+												response.creds.clientSecret;
+											chrome.storage.local.set({
+												tsusertoken: userToken,
+												tsclientid: clientId,
+												tsclientsecret: clientSecret,
+											});
+											resolve();
+										} else {
+											userToken = null;
+											window.alert(
+												'You need to be logged into your Truth Social account.',
+											);
+											resolve();
+										}
+									},
+								);
+							}
 						}
 					},
 				);
+				// }
 			});
-			console.log('Final user token = ', userToken);
 
-			if (userToken) {
+			if (userToken && clientId && clientSecret) {
 				instSpan.style.display = 'none';
 				instDiv.style.display = 'none';
 				instanceContainer.style.display = 'none';
@@ -144,45 +183,110 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				verificationDiv.style.display = 'block';
 				verificationDiv.style.display = 'none';
 				searchContainer.style.display = 'block';
+				dialog.showModal();
 				allWordsInput.focus();
+			} else if (userToken && (!clientId || !clientSecret)) {
+				window.alert('Please log in to your Truth Social account.');
+				chrome.runtime.sendMessage(
+					{ action: 'removeToken' },
+					(response) => {
+						if (response && response.success) {
+							userToken = null;
+							clientId = null;
+							clientSecret = null;
+							localStorage.clear();
+							sessionStorage.clear();
+							location.reload();
+						}
+					},
+				);
 			} else {
-				authContainer.style.display = 'block';
-				authFold.style.display = 'block';
-				authUnfold.style.display = 'none';
-				searchContainer.style.display = 'none';
-				searchFold.style.display = 'none';
-				searchUnfold.style.display = 'block';
+				// closeBtn.click();
+				const loginBtn = document.querySelector(
+					'button[data-testid="button"]',
+				);
+				if (
+					loginBtn &&
+					loginBtn.textContent.toLowerCase() === 'sign in'
+				) {
+					loginBtn.click();
+				}
 			}
-		});
-
-		function getUserToken(callback) {
-			chrome.storage.local.get(['tsusertoken'], function (result) {
-				const tsusertoken = result.tsusertoken || '';
-				callback(tsusertoken);
-			});
 		}
 
+		await getUserCreds();
+
 		async function saveUserToken() {
-			chrome.storage.local.set({ tsusertoken: userToken }, function () {
-				allDone.style.display = 'block';
-				instSpan.style.display = 'none';
-				instDiv.style.display = 'none';
-				instanceContainer.style.display = 'none';
-				setTimeout(() => {
-					authContainer.style.display = 'none';
-					authFold.style.display = 'none';
-					authUnfold.style.display = 'block';
-					searchContainer.style.display = 'block';
-					searchFold.style.display = 'block';
-					searchUnfold.style.display = 'none';
-				}, 1000);
-			});
+			chrome.storage.local.set(
+				{
+					tsusertoken: userToken,
+					tsclientid: clientId,
+					tsclientsecret: clientSecret,
+				},
+				function () {
+					allDone.style.display = 'block';
+					instSpan.style.display = 'none';
+					instDiv.style.display = 'none';
+					instanceContainer.style.display = 'none';
+					setTimeout(() => {
+						authContainer.style.display = 'none';
+						authFold.style.display = 'none';
+						authUnfold.style.display = 'block';
+						searchContainer.style.display = 'block';
+						searchFold.style.display = 'block';
+						searchUnfold.style.display = 'none';
+					}, 1000);
+				},
+			);
 		}
 
 		async function removeUserToken() {
-			chrome.storage.local.remove(['tsusertoken'], async () => {
-				userToken = null;
-				return true;
+			return new Promise(async (resolve) => {
+				const body = {
+					client_id: clientId,
+					client_secret: clientSecret,
+					token: userToken,
+				};
+				const revokeUrl = 'https://truthsocial.com/oauth/revoke';
+				try {
+					const response = await fetch(revokeUrl, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(body),
+					});
+					if (response.ok) {
+						chrome.runtime.sendMessage(
+							{ action: 'removeToken' },
+							async (response) => {
+								if (response && response.success) {
+									// window.alert(
+									// 	'You have successfully logged out.',
+									// );
+									userToken = null;
+									clientId = null;
+									clientSecret = null;
+									localStorage.clear();
+									sessionStorage.clear();
+									// location.reload();
+									resolve(true);
+								} else {
+									window.alert(
+										'Error resetting authentication',
+									);
+									resolve(false);
+								}
+							},
+						);
+						// resolve(true);
+					} else {
+						resolve(false);
+					}
+				} catch (error) {
+					console.error('Error revoking token:', error);
+					resolve(false);
+				}
 			});
 		}
 
@@ -206,12 +310,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		async function saveUnderstand() {
 			chrome.storage.local.set({ understand: 'understand' }, function () {
 				notice.style.display = 'none';
-			});
-		}
-
-		async function removeUnderstand() {
-			chrome.storage.local.remove('understand', function () {
-				notice.style.display = 'block';
 			});
 		}
 
@@ -284,27 +382,35 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		});
 
 		instanceSaveBtn.addEventListener('click', () => {
-			// authenticate();
-			chrome.runtime.sendMessage({ action: 'sendToken' }, (response) => {
-				if (response && response.success) {
-					userToken = response.token;
+			chrome.runtime.sendMessage({ action: 'sendCreds' }, (response) => {
+				if (response && response.success && response.creds) {
+					userToken = response.creds.token;
+					clientId = response.creds.clientId;
+					clientSecret = response.creds.clientSecret;
 					saveUserToken();
 				} else {
-					window.alert(
-						'You need to be logged into your Truth Social account.',
+					closeBtn.click();
+					const loginBtn = document.querySelector(
+						'button[data-testid="button"]',
 					);
+					if (
+						loginBtn &&
+						loginBtn.textContent.toLowerCase() === 'sign in'
+					) {
+						loginBtn.click();
+					}
 				}
 			});
 		});
 
 		// Reset authentication button
 		resetAuthBtn.addEventListener('click', async () => {
-			let reset = await removeUserToken();
-			if (reset) {
-				removeUnderstand();
-				instanceContainer.style.display = 'block';
-				allDone.style.display = 'none';
-				searchContainer.style.display = 'none';
+			const revoke = await removeUserToken();
+			if (!revoke) {
+				window.alert('Error resetting authentication');
+				return;
+			} else {
+				window.alert('You have successfully logged out.');
 				location.reload();
 			}
 		});
@@ -517,11 +623,16 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				if (response.status === 401) {
 					searchMsg.style.display = 'none';
 					window.alert(
-						'Application not authorized: please authenticate with Truth Social',
+						'Application not authorized: please log into Truth Social',
 					);
-					authContainer.style.display = 'block';
-					authFold.style.display = 'block';
-					authUnfold.style.display = 'none';
+					const revoked = removeUserToken();
+					if (revoked) {
+						location.reload();
+					} else {
+						authContainer.style.display = 'block';
+						authFold.style.display = 'block';
+						authUnfold.style.display = 'none';
+					}
 					throw new Error('User needs to authorize app');
 				} else if (response.status === 403) {
 					if (
