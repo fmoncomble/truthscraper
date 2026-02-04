@@ -192,7 +192,9 @@ chrome.webRequest.onResponseStarted.addListener(
 		}
 		if (details.statusCode === 403 || details.statusCode === 401) {
 			forbidden = true;
-			resetAccess(details.url);
+			if (details.statusCode === 403) {
+				resetAccess(details.url);
+			}
 			return;
 		}
 		if (details.statusCode === 200) {
@@ -330,15 +332,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function revokeToken(sendResponse) {
-	const cookies = await chrome.cookies.getAll({
-		domain: 'truthsocial.com',
-	});
-	for (let cookie of cookies) {
-		await chrome.cookies.remove({
-			url: `https://${cookie.domain}${cookie.path}`,
-			name: cookie.name,
-		});
-	}
 	chrome.storage.local.remove(
 		['tsusertoken', 'tsclientid', 'tsclientsecret', 'understand'],
 		async () => {

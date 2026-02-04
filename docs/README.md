@@ -6,7 +6,7 @@ An extension for extracting and downloading Truth Social posts for text mining a
 
 If you use this extension for your research, please reference it as follows:
 
-Moncomble, F. (2025). _TruthScraper_ (Version 0.5) [JavaScript]. Arras, France: Université d'Artois. Available at: https://fmoncomble.github.io/truthscraper/
+Moncomble, F. ([2025] 2026). _TruthScraper_ (Version 0.5) [JavaScript]. Arras, France: Université d'Artois. Available at: https://fmoncomble.github.io/truthscraper/
 
 ## Important notice
 
@@ -35,8 +35,9 @@ For research purposes only, in compliance with relevant copyright and privacy le
 - You can stop the process at any time by clicking `Abort`.
 - When all posts have been collected, a dialog opens for you to select the metadata to include in the file. By default, account name, date, content and URL are included.
 - Choose your preferred output format:
-    - `XML/XTZ` for an XML file to import into [TXM](https://txm.gitpages.huma-num.fr/textometrie/en/index.html) using the `XML/TEI-Zero` module
+    - `XML/XTZ (TXM)` for an XML file to import into [TXM](https://txm.gitpages.huma-num.fr/textometrie/en/index.html) using the `XML/TEI-Zero` module
         - When initiating the import process, open the "Textual planes" section and type `ref` in the field labelled "Out of text to edit"
+    - `XML (Sketch Engine)` for an XML file formatted for import into [Sketch Engine](https://www.sketchengine.eu/)
     - `TXT` for plain text
     - `CSV`
     - `XLSX`

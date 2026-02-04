@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "TruthScraper",
-	"version": "0.5.5",
+	"version": "0.5.6",
 	"description": "A browser extension to scrape Truth Social search results",
 	"homepage_url": "https://fmoncomble.github.io/truthscraper/",
 	"permissions": [
@@ -11,8 +11,7 @@
 		"webNavigation",
 		"webRequest",
 		"scripting",
-		"activeTab",
-		"cookies"
+		"activeTab"
 	],
 	"host_permissions": ["*://*.truthsocial.com/*"],
 	"web_accessible_resources": [

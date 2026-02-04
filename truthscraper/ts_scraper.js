@@ -326,7 +326,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 							'You have been temporarily blocked. You will be redirected to regain access.',
 						);
 						chrome.runtime.sendMessage(
-							{ action: 'resetAccess' },
+							{
+								action: 'resetAccess',
+								url: window.location.href,
+							},
 							(response) => {
 								if (response && response.success) {
 									window.reload();
