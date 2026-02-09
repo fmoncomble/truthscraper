@@ -472,7 +472,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		let queryAttempt = 0;
 		async function buildQueryUrl() {
 			queryAttempt += 1;
-			queryUrl = 'https://' + tsInstance + '/api/v2/search?';
+			queryUrl =
+				'https://' + tsInstance + '/api/v2/search?limit=20&offset=0';
 
 			// Concatenate query URL from search elements
 			let allWords = allWordsInput.value.replaceAll(' ', ' AND ');
@@ -482,7 +483,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			if (fromDate) {
 			}
 			if (allWords || thisPhrase) {
-				queryUrl = queryUrl + 'q=';
+				queryUrl = queryUrl + '&q=';
 			}
 			if (allWords) {
 				queryUrl = queryUrl + `${allWords}`;
@@ -554,7 +555,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 						accountInput.focus();
 						return;
 					}
-					if (allWords || anyWords || thisPhrase) {
+					if (allWords || thisPhrase) {
 						queryUrl = queryUrl + '&';
 					}
 					queryUrl = queryUrl + 'account_id=' + account;
@@ -567,9 +568,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					dialog.querySelector('#exclude-replies').checked;
 				const excludeReposts =
 					dialog.querySelector('#exclude-reposts').checked;
-				queryUrl = `https://truthsocial.com/api/v1/accounts/${account}/statuses?exclude_replies=${excludeReplies}&exclude_reposts=${excludeReposts}&limit=20`;
+				queryUrl = `https://truthsocial.com/api/v1/accounts/${account}/statuses?exclude_replies=${excludeReplies}&exclude_reblogs=${excludeReposts}&limit=20`;
 			} else if (searchMode === 'guided' || searchMode === 'expert') {
-				queryUrl = queryUrl + '&type=statuses&resolve=true&limit=20';
+				queryUrl = queryUrl + '&resolve=true&type=statuses';
 			}
 			if (searchMode !== 'url') {
 				if (fromDate) {
@@ -638,43 +639,20 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					}
 					throw new Error('User needs to authorize app');
 				} else if (response.status === 403) {
-					if (
-						window.confirm(
-							`You have been temporarily blocked (query attempt ${queryAttempt}): click OK to reset your access and try again`,
-						)
-					) {
-						chrome.runtime.sendMessage(
-							{
-								action: 'resetAccess',
-								url: queryUrl,
-							},
-							(response) => {
-								if (response && response.success) {
-									const accessResetListener3 = (
-										message,
-										sender,
-										sendResponse,
-									) => {
-										if (
-											message.action === 'accessResetDone'
-										) {
-											chrome.runtime.onMessage.removeListener(
-												accessResetListener3,
-											);
-											buildQueryUrl();
-											return;
-										}
-									};
-									chrome.runtime.onMessage.addListener(
-										accessResetListener3,
-									);
-								} else {
-									console.error('Failed to reset access');
-									return;
-								}
-							},
-						);
-					}
+					const accessResetListener3 = (
+						message,
+						sender,
+						sendResponse,
+					) => {
+						if (message.action === 'accessResetDone') {
+							chrome.runtime.onMessage.removeListener(
+								accessResetListener3,
+							);
+							buildQueryUrl();
+							return;
+						}
+					};
+					chrome.runtime.onMessage.addListener(accessResetListener3);
 				} else if (response.status === 429) {
 					const rateLimitListener = (
 						message,
@@ -820,7 +798,13 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 			let offset = 0;
 			skippedItems = 0;
 
+			let excludeReblogs =
+				dialog.querySelector('#exclude-reposts').checked;
+			let excludeReplies =
+				dialog.querySelector('#exclude-replies').checked;
+
 			while (statuses.length < maxToots) {
+				const requestTime = Date.now();
 				const result = await processPage();
 				if (!result) {
 					break;
@@ -833,6 +817,13 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 					abort = false;
 					break;
 				}
+				const resultTime = Date.now();
+				await new Promise((resolve) =>
+					setTimeout(
+						resolve,
+						Math.max(0, 1000 - (resultTime - requestTime)),
+					),
+				);
 			}
 
 			async function processPage() {
@@ -879,50 +870,27 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 								'Could not fetch: not authenticated',
 							);
 						} else if (response.status === 403) {
-							if (
-								window.confirm(
-									'You have been temporarily blocked: click OK to reset your access and try again',
-								)
-							) {
-								const ok = await new Promise((resolve) => {
-									chrome.runtime.sendMessage(
-										{
-											action: 'resetAccess',
-											url: nextQueryUrl,
-										},
-										(response) => {
-											if (response && response.success) {
-												const accessResetListener4 = (
-													message,
-													sender,
-													sendResponse,
-												) => {
-													if (
-														message.action ===
-														'accessResetDone'
-													) {
-														chrome.runtime.onMessage.removeListener(
-															accessResetListener4,
-														);
-														resolve(true);
-													}
-												};
-												chrome.runtime.onMessage.addListener(
-													accessResetListener4,
-												);
-											} else {
-												console.error(
-													'Failed to reset access',
-												);
-												resolve(false);
-											}
-										},
-									);
-								});
-								if (!ok) {
-									abort = true;
-									return false;
-								}
+							const ok = await new Promise((resolve) => {
+								const accessResetListener4 = (
+									message,
+									sender,
+									sendResponse,
+								) => {
+									if (message.action === 'accessResetDone') {
+										chrome.runtime.onMessage.removeListener(
+											accessResetListener4,
+										);
+										resolve(true);
+									}
+								};
+								chrome.runtime.onMessage.addListener(
+									accessResetListener4,
+								);
+							});
+							if (!ok) {
+								abort = true;
+								return false;
+							} else {
 								continue;
 							}
 						} else if (response.status === 429) {
@@ -1024,10 +992,32 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 									abort = true;
 									break;
 								}
-								const parser = new DOMParser();
+								id = s.id;
 								if (tootSet.has(s.id)) {
 									continue;
 								}
+								tootSet.add(s.id);
+								if (searchMode === 'user') {
+									if (
+										(excludeReblogs ||
+											nextQueryUrl.includes(
+												'exclude_reblogs',
+											)) &&
+										s.reblog
+									) {
+										continue;
+									}
+									if (
+										(excludeReplies ||
+											nextQueryUrl.includes(
+												'exclude_replies',
+											)) &&
+										s.in_reply_to_id
+									) {
+										continue;
+									}
+								}
+								const parser = new DOMParser();
 								if (lang && s.language !== lang) {
 									continue;
 								}
@@ -1044,16 +1034,26 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 								) {
 									continue;
 								}
-								id = s.id;
-								tootSet.add(s.id);
+								if (s.content === '<p></p>') {
+									skippedItems++;
+									continue;
+								}
 								let rawText = s.content;
 								let rawTextHtml = parser.parseFromString(
 									rawText,
 									'text/html',
 								);
-								let rawTextString =
-									rawTextHtml.documentElement.innerHTML;
-								rawTextString = rawTextString
+								let rawTextElements = Array.from(
+									rawTextHtml.body.querySelector('p')
+										.childNodes,
+								).map((node) => node.textContent);
+								let rawTextParsed = rawTextElements.join(' ');
+								let rawTextString = rawTextParsed
+									.replaceAll(/\s[,.;:!?]/gu, (match) =>
+										match.trim(),
+									)
+									.replaceAll(/\s+/gu, ' ')
+									.replaceAll('&nbsp;', ' ')
 									.replaceAll('<br>', '\n')
 									.replaceAll('<p>', '\n')
 									.replaceAll(/<.+?>/gu, '');
@@ -1442,6 +1442,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				for (let [key, value] of Object.entries(p)) {
 					if (typeof value === 'string') {
 						p[key] = value
+							.replaceAll('&nbsp;', ' ')
 							.replaceAll(/&/g, '&amp;')
 							.replaceAll(/</g, '&lt;')
 							.replaceAll(/>/g, '&gt;')
@@ -1508,6 +1509,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 				for (let [key, value] of Object.entries(p)) {
 					if (typeof value === 'string') {
 						p[key] = value
+							.replaceAll('&nbsp;', ' ')
 							.replaceAll(/&/g, '&amp;')
 							.replaceAll(/</g, '&lt;')
 							.replaceAll(/>/g, '&gt;')
